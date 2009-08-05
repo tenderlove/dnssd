@@ -168,7 +168,7 @@ dnssd_service_stop(VALUE service) {
   DNSServiceRef *client = (DNSServiceRef*)RDATA(service)->data;
   /* set to null right away for a bit more thread safety */
   RDATA(service)->data = NULL;
-  if (client == NULL) rb_raise(rb_eRuntimeError, "service is already stopped");
+  if (client == NULL) rb_raise(eDNSSDError, "service is already stopped");
   dnssd_service_free_client(client);
   thread = rb_ivar_get(service, dnssd_iv_thread);
   rb_ivar_set(service, dnssd_iv_block, Qnil);

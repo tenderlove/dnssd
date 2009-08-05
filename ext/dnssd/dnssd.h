@@ -30,6 +30,7 @@
 #endif
 
 extern VALUE mDNSSD;
+extern VALUE eDNSSDError;
 
 void dnssd_check_error_code(DNSServiceErrorType e);
 void dnssd_instantiation_error(const char *what);

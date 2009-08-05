@@ -1,13 +1,20 @@
 require 'dnssd/dnssd'
 
+##
+# DNSSD is a wrapper for Apple's DNS Service Discovery library.  The methods
+# DNSSD.enumerate_domains, DNSSD.browse(), DNSSD.register(), and
+# DNSSD.resolve() provide the basic API for making your applications DNS
+# Service Discovery aware.
+
 module DNSSD
-  VERSION = '0.7.2'
+  VERSION = '1.0'
 end
+
+require 'dnssd/flags'
 
 =begin
 
 module DNSSD
-  class Error < RuntimeError; end
   class MalformedDomain < Error; end
   class MalformedPort < Error; end
 

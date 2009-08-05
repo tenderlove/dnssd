@@ -114,10 +114,10 @@ static void
 dnssd_tr_valid_key(const char *key_cstr, long len) {
   /* keys cannot contain '=' */
   if (strchr(key_cstr, '='))
-    rb_raise(rb_eRuntimeError, "key '%s' contains '='", key_cstr);
+    rb_raise(eDNSSDError, "key '%s' contains '='", key_cstr);
 
   if (len <= 0)
-    rb_raise(rb_eRuntimeError, "empty key given");
+    rb_raise(eDNSSDError, "empty key given");
 }
 
 static long
@@ -141,7 +141,7 @@ dnssd_tr_convert_pairs(volatile VALUE ary) {
     }
     /* len == sum(key length, 1 for '=' if value != nil, value length) */
     if (len > UINT8_MAX)
-      rb_raise(rb_eRuntimeError, "key, value pair at '%s' is too large to encode", key_cstr);
+      rb_raise(eDNSSDError, "key, value pair at '%s' is too large to encode", key_cstr);
 
     /* now that we know no errors are going to occur */
     if (RSTRING_LEN(key) > 14)

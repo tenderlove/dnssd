@@ -12,7 +12,7 @@
 #include <assert.h>
 
 VALUE mDNSSD;
-static VALUE eDNSSDError;
+VALUE eDNSSDError;
 static VALUE eDNSSDUnknownError;
 
 #define DNSSD_ERROR_START (-65556)
@@ -50,10 +50,6 @@ dnssd_instantiation_error(const char *what) {
 
 /*
  * Document-module: DNSSD
- * DNSSD is a wrapper for Apple's DNS Service Discovery library.
- * The methods DNSSD.enumerate_domains, DNSSD.browse(),
- * DNSSD.register(), and DNSSD.resolve() provide the basic API
- * for making your applications DNS Service Discovery aware.
  *
  */
 
