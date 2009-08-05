@@ -266,9 +266,8 @@ dnssd_flags_to_i(VALUE self) {
 }
 
 static VALUE
-dnssd_flags_list(VALUE self) {
+dnssd_flags_to_a(VALUE self) {
   DNSServiceFlags flags = dnssd_get_flags(self);
-  VALUE buf = rb_str_buf_new(0);
   int i;
 
   VALUE arry = rb_ary_new();
@@ -279,7 +278,7 @@ dnssd_flags_list(VALUE self) {
     }
   }
 
-  return rb_funcall(arry, rb_intern("join"), 1, rb_str_new2(","));
+  return arry;
 }
 
 static VALUE
@@ -293,24 +292,6 @@ dnssd_struct_inspect(VALUE self, VALUE data) {
   }
   rb_str_buf_cat2(buf, ">");
   return buf;
-}
-
-/*
- * call-seq:
- *    flags.inspect => string
- *
- * Create a printable version of _flags_.
- *
- *    flags = DNSSD::Flags.new
- *    flags.add = true
- *    flags.default = true
- *    flags.inspect  # => "#<DNSSD::Flags add,default>"
- *
- */
-
-static VALUE
-dnssd_flags_inspect(VALUE self) {
-  return dnssd_struct_inspect(self, dnssd_flags_list(self));
 }
 
 /*
@@ -560,7 +541,7 @@ Init_DNSSD_Replies(void) {
   rb_define_method(cDNSSDFlags, "initialize", dnssd_flags_initialize, -1);
   /* this creates all the attr_writer and flag? methods */
   dnssd_init_flags_methods(cDNSSDFlags);
-  rb_define_method(cDNSSDFlags, "inspect", dnssd_flags_inspect, 0);
+  rb_define_method(cDNSSDFlags, "to_a", dnssd_flags_to_a, 0);
   rb_define_method(cDNSSDFlags, "to_i", dnssd_flags_to_i, 0);
   rb_define_method(cDNSSDFlags, "==", dnssd_flags_equal, 1);
 
