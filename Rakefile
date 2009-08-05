@@ -18,6 +18,7 @@ HOE = Hoe.spec 'dnssd' do
   clean_globs << 'lib/dnssd/*.{so,bundle,dll}'
 
   extra_dev_deps << ['rake-complier', '~> 0.6']
+  extra_dev_deps << ['minitest', '~> 1.4']
 end
 
 require 'rake/extensiontask'

@@ -1,4 +1,6 @@
-/lib/dnssd/dnssd.{bundle,so,dll}
+/lib/dnssd/dnssd.bundle
+/lib/dnssd/dnssd.so
+/lib/dnssd/dnssd.dll
 /tmp
 *.swp
 
