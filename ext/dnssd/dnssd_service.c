@@ -1,13 +1,12 @@
 /*
  * Ruby Rendezvous Binding
- * $Id: rdnssd_service.c,v 1.24 2005/03/22 00:19:37 cmills Exp $
  *
  * Copyright (c) 2004 Chad Fowler, Charles Mills, Rich Kilmer
  * Licenced under the same terms as Ruby.
  * This software has absolutely no warranty.
  */
 
-#include "rdnssd.h"
+#include "dnssd.h"
 #include <assert.h>
 
 #ifndef DNSSD_API

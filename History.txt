@@ -1,0 +1,5 @@
+=== 0.7.2 / 2009-08-05
+
+* 1 major enhancement
+  * 1.9 compatibility
+

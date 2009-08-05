@@ -1,0 +1,4 @@
+/lib/dnssd/dnssd.{bundle,so,dll}
+/tmp
+*.swp
+

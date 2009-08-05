@@ -63,5 +63,5 @@ s2 = check_sizeof("DNSServiceFlags", "dns_sd.h") or
 # need to make sure storing unsigned integer in void * is OK.
 s1 >= s2 or abort("sizeof(void*) < sizeof(DNSServiceFlags) please contact the authors!")
 
-create_makefile("rdnssd")
+create_makefile("dnssd")
 

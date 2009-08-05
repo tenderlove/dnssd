@@ -1,0 +1,12 @@
+History.txt
+Manifest.txt
+README.txt
+Rakefile
+ext/dnssd/dns_sd.h
+ext/dnssd/dnssd.c
+ext/dnssd/dnssd.h
+ext/dnssd/dnssd_service.c
+ext/dnssd/dnssd_structs.c
+ext/dnssd/dnssd_tr.c
+ext/dnssd/extconf.rb
+lib/dnssd.rb
