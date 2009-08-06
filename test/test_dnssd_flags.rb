@@ -9,6 +9,7 @@ class TestDNSSDFlags < MiniTest::Unit::TestCase
 
   def test_accessors
     DNSSD::Flags.constants.each do |name|
+      next unless name =~ /[a-z]/
       attr = name.to_s.gsub(/([a-z])([A-Z])/, '\1_\2').downcase
 
       assert_respond_to @flags, "#{attr}="
@@ -52,7 +53,7 @@ class TestDNSSDFlags < MiniTest::Unit::TestCase
     assert_equal 0, @flags
   end
 
-  def test_clear_flags
+  def test_clear_flag
     @flags.set_flag DNSSD::Flags::Add
     @flags.set_flag DNSSD::Flags::Default
 
@@ -122,7 +123,7 @@ class TestDNSSDFlags < MiniTest::Unit::TestCase
     @flags.add = true
     @flags.default = true
 
-    assert_equal %w[add default], @flags.to_a
+    assert_equal %w[add default], @flags.to_a.sort
   end
 
   def test_to_i

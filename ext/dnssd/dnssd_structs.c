@@ -19,12 +19,6 @@ static ID dnssd_iv_type;
 static ID dnssd_iv_domain;
 static ID dnssd_iv_service;
 
-#define IsDNSSDFlags(obj) (rb_obj_is_kind_of(obj,cDNSSDFlags)==Qtrue)
-#define VerifyDNSSDFlags(obj) \
-  do { \
-    if(!IsDNSSDFlags(obj)) rb_fatal(__FILE__":%d: bug in DNSSD",__LINE__); \
-  } while (0)
-
 /* dns sd flags, flag ID's, flag names */
 #define DNSSD_MAX_FLAGS 9
 
@@ -45,14 +39,6 @@ static const DNSServiceFlags dnssd_flag[DNSSD_MAX_FLAGS] = {
   kDNSServiceFlagsLongLivedQuery
 };
 
-/* used to make sure only valid bits are set in a flag. */
-#define DNSSD_FLAGS_MASK(f) \
-  ( (f) & (kDNSServiceFlagsMoreComing | \
-           kDNSServiceFlagsAdd | kDNSServiceFlagsDefault | \
-           kDNSServiceFlagsNoAutoRename | kDNSServiceFlagsShared | \
-           kDNSServiceFlagsUnique | kDNSServiceFlagsBrowseDomains | \
-           kDNSServiceFlagsRegistrationDomains | kDNSServiceFlagsLongLivedQuery) )
-
 static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
   "more_coming",
   "add",
@@ -64,156 +50,6 @@ static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
   "registration_domains",
   "long_lived_query"
 };
-
-static VALUE
-dnssd_flags_alloc(VALUE klass) {
-  /* no free function or mark function, initialize flags/data to 0 */
-  return Data_Wrap_Struct(klass, 0, 0, 0);
-}
-
-static VALUE
-dnssd_flags_init(VALUE self, DNSServiceFlags flags) {
-  VerifyDNSSDFlags(self);
-  /* note DNSSD_FLAGS_MASK() here */
-  RDATA(self)->data = (void*)DNSSD_FLAGS_MASK(flags);
-  return self;
-}
-
-static DNSServiceFlags
-dnssd_get_flags(VALUE self) {
-  VerifyDNSSDFlags(self);
-  return (DNSServiceFlags)RDATA(self)->data;
-}
-
-DNSServiceFlags
-dnssd_to_flags(VALUE obj) {
-  DNSServiceFlags flags = 0;
-  if (IsDNSSDFlags(obj)) {
-    flags = dnssd_get_flags(obj);
-  } else {
-    /* don't want to include any bits that aren't flags */
-    flags = DNSSD_FLAGS_MASK((DNSServiceFlags)NUM2ULONG(obj));
-  }
-  return flags;
-}
-
-/*
- * call-seq:
- *   DNSSD::Flags.new()                   => flags
- *   DNSSD::Flags.new(flag1, flag2, ...)  => union_of_flags
- *
- * Returns a new set of flags.
- * In the first form an empty set of flags is created.
- * In the second a set of flags containing the union of
- * each flag (or set of flags) given is created.
- *
- *   flags = Flags.new()
- *   flags.more_coming = true
- *   flags.to_i                #=> DNSSD::Flags::MoreComing
- *   f.shared = true
- *   flags.to_i                #=> Flags::MoreComing | Flags::Shared
- *
- *   same_flags = Flags.new(Flags::MoreComing | Flags::Shared)
- *   flags == same_flags       #=> true
- *
- *   same_flags_again = Flags.new(Flags::MoreComing, Flags::Shared)
- *   flags == same_flags_again  #=> true
- *
- */
-
-static VALUE
-dnssd_flags_initialize(int argc, VALUE *argv, VALUE self) {
-  int i;
-  DNSServiceFlags flags = 0;
-
-  for (i=0; i<argc; i++) {
-    flags |= dnssd_to_flags(argv[i]);
-  }
-  return dnssd_flags_init(self, flags);
-}
-
-static VALUE
-dnssd_flags_new2(VALUE klass, DNSServiceFlags flags) {
-  return dnssd_flags_init(dnssd_flags_alloc(klass), flags);
-}
-
-static VALUE
-dnssd_flags_new(DNSServiceFlags flags) {
-  return dnssd_flags_new2(cDNSSDFlags, flags);
-}
-
-/*
- * call-seq:
- *    flags.set_flag(f)
- *
- * Set the flag _f_ in _flags_.
- *
- *    flags = Flags.new()                #=> #<DNSSD::Flags>
- *    flags.set_flag(Flags::MoreComing)  #=> #<DNSSD::Flags more_coming>
- *
- */
-
-static VALUE
-dnssd_flags_set(VALUE self, VALUE num) {
-  DNSServiceFlags flags;
-  VerifyDNSSDFlags(self);
-  flags = (DNSServiceFlags)RDATA(self)->data;
-  flags |= dnssd_to_flags(num);
-  RDATA(self)->data = (void*)flags;
-  return self;
-}
-
-/*
- * call-seq:
- *    flags.clear_flag(f)
- *
- * Clear the flag _f_ in _flags_.
- *
- *    flags = Flags.new(Flags::MoreComing)  #=> #<DNSSD::Flags more_coming>
- *    flags.clear_flag(Flags::MoreComing)   #=> #<DNSSD::Flags>
- *
- */
-
-static VALUE
-dnssd_flags_clear(VALUE self, VALUE num) {
-  DNSServiceFlags flags;
-  VerifyDNSSDFlags(self);
-  /* flags should stay masked here (see DNSSD_FLAGS_MASK() macro) */
-  flags = (DNSServiceFlags)RDATA(self)->data;
-  flags &= ~dnssd_to_flags(num);
-  RDATA(self)->data = (void*)flags;
-  return self;
-}
-
-/*
- * call-seq:
- *    flags.to_i => an_integer
- *
- * Get the integer representation of _flags_ by bitwise or'ing
- * each of the set flags.
- *
- */
-
-static VALUE
-dnssd_flags_to_i(VALUE self) {
-  return ULONG2NUM(dnssd_get_flags(self));
-}
-
-static VALUE
-dnssd_flags_to_a(VALUE self) {
-  DNSServiceFlags flags = dnssd_get_flags(self);
-  int i;
-
-  VALUE arry = rb_ary_new();
-
-  for (i=0; i<DNSSD_MAX_FLAGS; i++) {
-    if (flags & dnssd_flag[i]) {
-      rb_ary_push(arry, rb_str_new2(dnssd_flag_name[i]));
-    }
-  }
-
-  return arry;
-}
 
 static VALUE
 dnssd_struct_inspect(VALUE self, VALUE data) {
@@ -338,7 +174,8 @@ static VALUE
 reply_new(VALUE service, DNSServiceFlags flags) {
   VALUE self = rb_obj_alloc(cDNSSDReply);
   rb_ivar_set(self, dnssd_iv_service, service);
-  rb_ivar_set(self, dnssd_iv_flags, dnssd_flags_new(flags));
+  rb_ivar_set(self, dnssd_iv_flags,
+              rb_funcall(cDNSSDFlags, rb_intern("new"), 1, flags));
   return self;
 }
 
@@ -433,6 +270,8 @@ reply_initialize(int argc, VALUE *argv, VALUE reply) {
 
 void
 Init_DNSSD_Replies(void) {
+  int i;
+  VALUE flags_hash;
   /* hack so rdoc documents the project correctly */
 #ifdef mDNSSD_RDOC_HACK
   mDNSSD = rb_define_module("DNSSD");
@@ -450,13 +289,6 @@ Init_DNSSD_Replies(void) {
   dnssd_iv_service = rb_intern("@service");
 
   cDNSSDFlags = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
-  rb_define_alloc_func(cDNSSDFlags, dnssd_flags_alloc);
-  rb_define_method(cDNSSDFlags, "initialize", dnssd_flags_initialize, -1);
-  rb_define_method(cDNSSDFlags, "to_a", dnssd_flags_to_a, 0);
-  rb_define_method(cDNSSDFlags, "to_i", dnssd_flags_to_i, 0);
-
-  rb_define_method(cDNSSDFlags, "set_flag", dnssd_flags_set, 1);
-  rb_define_method(cDNSSDFlags, "clear_flag", dnssd_flags_clear, 1);
 
   cDNSSDReply = rb_define_class_under(mDNSSD, "Reply", rb_cObject);
   /* DNSSD::Reply objects can only be instantiated by
@@ -546,16 +378,20 @@ Init_DNSSD_Replies(void) {
   /* Flag for creating a long-lived unicast query for the DNSDS.query_record()
    * (currently not part of the Ruby API). */
   rb_define_const(cDNSSDFlags, "LongLivedQuery", ULONG2NUM(kDNSServiceFlagsLongLivedQuery));
+
+  flags_hash = rb_hash_new();
+
+  for (i = 0; i < DNSSD_MAX_FLAGS; i++) {
+    rb_hash_aset(flags_hash, rb_str_new2(dnssd_flag_name[i]),
+		 ULONG2NUM(dnssd_flag[i]));
+  }
+
+  rb_define_const(cDNSSDFlags, "FLAGS", flags_hash);
 }
 
 /* Document-class: DNSSD::Reply
  *
  * DNSSD::Reply is used to return information
  *
- */
-
-/* Document-class: DNSSD::Flags
- *
- * Flags used in DNSSD Ruby API.
  */
 

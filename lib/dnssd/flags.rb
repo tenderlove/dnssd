@@ -1,6 +1,10 @@
+##
+# Flags used in DNSSD Ruby API.
+
 class DNSSD::Flags
 
   constants.each do |name|
+    next unless name =~ /[a-z]/
     attr = name.to_s.gsub(/([a-z])([A-Z])/, '\1_\2').downcase
 
     flag = const_get name
@@ -18,6 +22,17 @@ class DNSSD::Flags
     end
   end
 
+  ALL_FLAGS = FLAGS.values.inject { |flag, all| flag | all }
+
+  ##
+  # Returns a new set of flags
+
+  def initialize(*flags)
+    @flags = flags.inject 0 do |flag, acc| flag | acc end
+
+    verify
+  end
+
   ##
   # Returns the intersection of flags in +self+ and +flags+.
 
@@ -32,10 +47,44 @@ class DNSSD::Flags
     to_i == other.to_i
   end
 
+  ##
+  # Clears +flag+
+
+  def clear_flag(flag)
+    @flags &= ~flag
+
+    verify
+  end
+
   def inspect # :nodoc:
     flags = to_a.sort.join ', '
     flags[0, 0] = ' ' unless flags.empty?
     "#<#{self.class}#{flags}>"
+  end
+
+  ##
+  # Sets +flag+
+
+  def set_flag(flag)
+    @flags |= flag
+
+    verify
+  end
+
+  def to_a
+    FLAGS.map do |name, value|
+      (@flags & value == value) ? name : nil
+    end.compact
+  end
+
+  def to_i # :nodoc:
+    @flags
+  end
+
+  def verify
+    @flags &= ALL_FLAGS
+
+    self
   end
 
   ##
