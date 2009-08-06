@@ -1,9 +1,55 @@
 class DNSSD::Flags
 
+  constants.each do |name|
+    attr = name.to_s.gsub(/([a-z])([A-Z])/, '\1_\2').downcase
+
+    flag = const_get name
+
+    define_method "#{attr}=" do |bool|
+      if bool then
+        set_flag flag
+      else
+        clear_flag flag
+      end
+    end
+
+    define_method "#{attr}?" do
+      self & flag == flag
+    end
+  end
+
+  ##
+  # Returns the intersection of flags in +self+ and +flags+.
+
+  def &(flags)
+    self.class.new(to_i & flags.to_i)
+  end
+
+  ##
+  # +self+ is equal if +other+ has the same flags
+
+  def ==(other)
+    to_i == other.to_i
+  end
+
   def inspect # :nodoc:
     flags = to_a.sort.join ', '
     flags[0, 0] = ' ' unless flags.empty?
     "#<#{self.class}#{flags}>"
+  end
+
+  ##
+  # Returns the union of flags in +self+ and +flags+
+
+  def |(flags)
+    self.class.new(to_i | flags.to_i)
+  end
+
+  ##
+  # Returns the complement of the flags in +self+
+
+  def ~
+    self.class.new ~to_i
   end
 
 end

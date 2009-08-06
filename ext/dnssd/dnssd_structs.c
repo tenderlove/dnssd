@@ -65,32 +65,6 @@ static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
   "long_lived_query"
 };
 
-static void
-dnssd_init_flags_methods(VALUE klass) {
-  char buffer[128];
-  int i;
-  for (i=0; i<DNSSD_MAX_FLAGS; i++) {
-    unsigned long flag = (unsigned long)dnssd_flag[i];
-    const char *flag_name = dnssd_flag_name[i];
-    VALUE str;
-    size_t len;
-    len = snprintf(buffer, sizeof(buffer),
-        "def %s?; self & %lu end",
-        flag_name, flag);
-    str = rb_str_new(buffer, (long)len);
-    rb_mod_module_eval(1, &str, klass);
-
-    /* similar to attr_writer method for each flag */
-    len = snprintf(buffer, sizeof(buffer),
-        "def %s=(val); "
-        "if val then self.set_flag(%lu) else self.clear_flag(%lu) end; "
-        "val end", /* return val */
-        flag_name, flag, flag);
-    str = rb_str_new(buffer, (long)len);
-    rb_mod_module_eval(1, &str, klass);
-  }
-}
-
 static VALUE
 dnssd_flags_alloc(VALUE klass) {
   /* no free function or mark function, initialize flags/data to 0 */
@@ -213,46 +187,6 @@ dnssd_flags_clear(VALUE self, VALUE num) {
 
 /*
  * call-seq:
- *    flags1 & flags2 => flags
- *
- * Returns the set of flags included in <i>flags1</i> and <i>flags2</i>.
- *
- */
-
-static VALUE
-dnssd_flags_and(VALUE self, VALUE num) {
-  return dnssd_flags_new2(CLASS_OF(self), dnssd_get_flags(self) & dnssd_to_flags(num));
-}
-
-/*
- * call-seq:
- *    flags1 | flags2 => flags
- *
- * Returns the set of flags included in <i>flags1</i> or <i>flags2</i>.
- *
- */
-
-static VALUE
-dnssd_flags_or(VALUE self, VALUE num) {
-  return dnssd_flags_new2(CLASS_OF(self), dnssd_get_flags(self) | dnssd_to_flags(num));
-}
-
-/*
- * call-seq:
- *    ~flags => unset_flags
- *
- * Returns the set of flags not included in _flags_.
- *
- */
-
-static VALUE
-dnssd_flags_not(VALUE self) {
-  /* doesn't totally make sence to return a set of flags here... */
-  return dnssd_flags_new2(CLASS_OF(self), ~dnssd_get_flags(self));
-}
-
-/*
- * call-seq:
  *    flags.to_i => an_integer
  *
  * Get the integer representation of _flags_ by bitwise or'ing
@@ -292,27 +226,6 @@ dnssd_struct_inspect(VALUE self, VALUE data) {
   }
   rb_str_buf_cat2(buf, ">");
   return buf;
-}
-
-/*
- * call-seq:
- *    flags == obj => true or false
- *
- * Equality--Two sets of flags are equal if they contain the same flags.
- *
- *    flags = Flags.new()
- *    flags.more_coming = true
- *    flags.shared = true
- *    flags == Flags::MoreComing | Flags::Shared            #=> true
- *    flags == Flags.new(Flags::MoreComing | Flags::Shared) #=> true
- */
-
-static VALUE
-dnssd_flags_equal(VALUE self, VALUE obj) {
-  DNSServiceFlags flags = dnssd_get_flags(self);
-  DNSServiceFlags obj_flags = dnssd_to_flags(obj);
-
-  return flags == obj_flags ? Qtrue : Qfalse;
 }
 
 VALUE
@@ -539,15 +452,8 @@ Init_DNSSD_Replies(void) {
   cDNSSDFlags = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
   rb_define_alloc_func(cDNSSDFlags, dnssd_flags_alloc);
   rb_define_method(cDNSSDFlags, "initialize", dnssd_flags_initialize, -1);
-  /* this creates all the attr_writer and flag? methods */
-  dnssd_init_flags_methods(cDNSSDFlags);
   rb_define_method(cDNSSDFlags, "to_a", dnssd_flags_to_a, 0);
   rb_define_method(cDNSSDFlags, "to_i", dnssd_flags_to_i, 0);
-  rb_define_method(cDNSSDFlags, "==", dnssd_flags_equal, 1);
-
-  rb_define_method(cDNSSDFlags, "&", dnssd_flags_and, 1);
-  rb_define_method(cDNSSDFlags, "|", dnssd_flags_or, 1);
-  rb_define_method(cDNSSDFlags, "~", dnssd_flags_not, 0);
 
   rb_define_method(cDNSSDFlags, "set_flag", dnssd_flags_set, 1);
   rb_define_method(cDNSSDFlags, "clear_flag", dnssd_flags_clear, 1);
