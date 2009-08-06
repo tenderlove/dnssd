@@ -2,5 +2,6 @@
 /lib/dnssd/dnssd.so
 /lib/dnssd/dnssd.dll
 /tmp
+/TAGS
 *.swp
 
