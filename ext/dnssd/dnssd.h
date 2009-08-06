@@ -43,9 +43,6 @@ VALUE dnssd_tr_new(long len, const char *buf);
 
 VALUE dnssd_tr_to_encoded_str(VALUE v);
 
-/* Get DNSServiceFlags from self */
-DNSServiceFlags dnssd_to_flags(VALUE obj);
-
 VALUE dnssd_domain_enum_new(VALUE service, DNSServiceFlags flags,
     uint32_t interface, const char *domain);
 

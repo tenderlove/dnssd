@@ -17,6 +17,7 @@
 static VALUE cDNSSDService;
 static ID dnssd_id_call;
 static ID dnssd_id_to_str;
+static ID dnssd_id_to_i;
 static ID dnssd_iv_block;
 static ID dnssd_iv_thread;
 static ID dnssd_iv_result;
@@ -25,6 +26,11 @@ static ID dnssd_iv_service;
 #define IsDNSSDService(obj) (rb_obj_is_kind_of(obj,cDNSSDService)==Qtrue)
 #define GetDNSSDService(obj, var) \
   do { assert(IsDNSSDService(obj)); Data_Get_Struct(obj, DNSServiceRef, var); } while (0)
+
+static DNSServiceFlags
+dnssd_to_flags(VALUE obj) {
+  return (DNSServiceFlags)NUM2ULONG(rb_funcall(obj, dnssd_id_to_i, 0));
+}
 
 void
 dnssd_callback(VALUE service, VALUE reply) {
@@ -660,6 +666,7 @@ Init_DNSSD_Service(void) {
 #endif
   dnssd_id_call = rb_intern("call");
   dnssd_id_to_str = rb_intern("to_str");
+  dnssd_id_to_i = rb_intern("to_i");
   dnssd_iv_block = rb_intern("@block");
   dnssd_iv_thread = rb_intern("@thread");
   dnssd_iv_result = rb_intern("@result");
