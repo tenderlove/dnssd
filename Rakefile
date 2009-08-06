@@ -3,6 +3,9 @@
 require 'rubygems'
 require 'hoe'
 
+Hoe.plugin :minitest
+Hoe.plugin :email
+
 HOE = Hoe.spec 'dnssd' do
   self.rubyforge_name = 'dnssd'
 
@@ -17,8 +20,9 @@ HOE = Hoe.spec 'dnssd' do
 
   clean_globs << 'lib/dnssd/*.{so,bundle,dll}'
 
-  extra_dev_deps << ['rake-complier', '~> 0.6']
+  extra_dev_deps << ['hoe-seattlerb', '~> 1.2']
   extra_dev_deps << ['minitest', '~> 1.4']
+  extra_dev_deps << ['rake-complier', '~> 0.6']
 end
 
 require 'rake/extensiontask'
