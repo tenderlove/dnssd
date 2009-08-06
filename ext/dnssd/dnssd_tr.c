@@ -50,11 +50,11 @@ dnssd_tr_decode_buffer(VALUE self, long buf_len, const char *buf_ptr) {
 
 static void
 dnssd_tr_decode_str(VALUE self, VALUE str) {
-  str = StringValue(str);
+  Check_Type(str, T_STRING);
   /* text records cannot be longer than 65535 (0xFFFF) */
   if (RSTRING_LEN(str) > UINT16_MAX)
     rb_raise(rb_eArgError, "string is to large to encode");
-  dnssd_tr_decode_buffer (self, RSTRING_LEN(str), RSTRING_PTR(str));
+  dnssd_tr_decode_buffer(self, RSTRING_LEN(str), RSTRING_PTR(str));
 }
 
 /*

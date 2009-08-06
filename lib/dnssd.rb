@@ -11,6 +11,7 @@ module DNSSD
 end
 
 require 'dnssd/flags'
+require 'dnssd/reply'
 
 =begin
 

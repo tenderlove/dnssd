@@ -15,16 +15,21 @@ require "mkmf"
 $CFLAGS << " -Wall"
 $CFLAGS << " -DDEBUG" if $DEBUG
 
-unless RUBY_PLATFORM.include? "darwin"
-  have_library( "mdns", "DNSServiceRefSockFD" ) or
-  have_library( "dns_sd", "DNSServiceRefSockFD" ) or
-  abort( "can't find rendezvous library" )
+libraries = {
+  'mdns'   => 'DNSServiceRefSockFD',
+  'dns_sd' => 'DNSServiceRefSockFD',
+  'System' => 'DNSServiceRefSockFD'
+}.sort
+
+dnssd_found = libraries.any? do |library, function|
+  have_library library, function
 end
 
-#have_library( "dns-sd", "DNSServiceRefSockFD" ) or
-# abort( "Can't find rendezvous client library" )
+unless dnssd_found then
+  abort "Couldn't find DNSSD in libraries #{libraries.keys.join ', '}"
+end
 
-have_header("dns_sd.h") or abort("can't find the rendezvous client headers")
+have_header "dns_sd.h" or abort "can't find the rendezvous client headers"
 
 have_header "unistd.h"
 have_header "sys/types.h"

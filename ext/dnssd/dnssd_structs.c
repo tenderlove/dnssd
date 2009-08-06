@@ -51,19 +51,6 @@ static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
   "long_lived_query"
 };
 
-static VALUE
-dnssd_struct_inspect(VALUE self, VALUE data) {
-  VALUE buf = rb_str_buf_new(20 + RSTRING_LEN(data));
-  rb_str_buf_cat2(buf, "#<");
-  rb_str_buf_cat2(buf, rb_obj_classname(self));
-  if (RSTRING_LEN(data) > 0) {
-    rb_str_buf_cat2(buf, " ");
-    rb_str_buf_append(buf, data);
-  }
-  rb_str_buf_cat2(buf, ">");
-  return buf;
-}
-
 VALUE
 dnssd_create_fullname(const char *name, const char *regtype, const char *domain, int err_flag) {
   char buffer[kDNSServiceMaxDomainName];
@@ -83,13 +70,6 @@ dnssd_create_fullname(const char *name, const char *regtype, const char *domain,
   }
   buffer[kDNSServiceMaxDomainName - 1] = '\000'; /* just in case */
   return rb_str_new2(buffer);
-}
-
-VALUE
-dnssd_split_fullname(VALUE fullname) {
-  static const char re[] = "(?:\\\\.|[^\\.])+\\.";
-  VALUE regexp = rb_reg_new(re, sizeof(re)-1, 0);
-  return rb_funcall2(fullname, rb_intern("scan"), 1, &regexp);
 }
 
 #if 0
@@ -144,13 +124,7 @@ reply_add_names(VALUE self, const char *name,
 static void
 reply_add_names2(VALUE self, const char *fullname) {
   VALUE fn = rb_str_new2(fullname);
-  VALUE ary = dnssd_split_fullname(fn);
-  VALUE type[2] =  { rb_ary_entry(ary, 1), rb_ary_entry(ary, 2) };
-
-  rb_ivar_set(self, dnssd_iv_name, rb_ary_entry(ary, 0));
-  rb_ivar_set(self, dnssd_iv_type, dnssd_join_names(2, type));
-  rb_ivar_set(self, dnssd_iv_domain, rb_ary_entry(ary, -1));
-  rb_ivar_set(self, dnssd_iv_fullname, fn);
+  rb_funcall(self, rb_intern("set_fullname"), 1, fn);
 }
 
 static void
@@ -248,17 +222,6 @@ dnssd_resolve_new(VALUE service, DNSServiceFlags flags, uint32_t interface,
 
 /*
  * call-seq:
- *    reply.inspect   => string
- *
- */
-static VALUE
-reply_inspect(VALUE self) {
-  VALUE fullname = rb_ivar_get(self, dnssd_iv_fullname);
-  return dnssd_struct_inspect(self, StringValue(fullname));
-}
-
-/*
- * call-seq:
  *    DNSSD::Reply.new() => raises a RuntimeError
  *
  */
@@ -288,96 +251,83 @@ Init_DNSSD_Replies(void) {
   dnssd_iv_domain = rb_intern("@domain");
   dnssd_iv_service = rb_intern("@service");
 
-  cDNSSDFlags = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
-
   cDNSSDReply = rb_define_class_under(mDNSSD, "Reply", rb_cObject);
   /* DNSSD::Reply objects can only be instantiated by
    * DNSSD.browse(), DNSSD.register(), DNSSD.resolve(), DNSSD.enumerate_domains(). */
   rb_define_method(cDNSSDReply, "initialize", reply_initialize, -1);
-  /* The service associated with the reply.  See DNSSD::Service for more information. */
-  rb_define_attr(cDNSSDReply, "service", 1, 0);
-  /* Flags describing the reply.  See DNSSD::Flags for more information. */
-  rb_define_attr(cDNSSDReply, "flags", 1, 0);
-  /* The service name. (Not used by DNSSD.enumerate_domains().) */
-  rb_define_attr(cDNSSDReply, "name", 1, 0);
-  /* The service type. (Not used by DNSSD.enumerate_domains().) */
-  rb_define_attr(cDNSSDReply, "type", 1, 0);
-  /* The service domain. */
-  rb_define_attr(cDNSSDReply, "domain", 1, 0);
-  /* The interface on which the service is available. (Used only by DNSSSD.resolve().) */
-  rb_define_attr(cDNSSDReply, "interface", 1, 0);
-  /* The full service domain name, in the form "<servicename>.<protocol>.<domain>.".
-   * (Any literal dots (".") are escaped with a backslash ("\."), and literal
-   * backslashes are escaped with a second backslash ("\\"), e.g. a web server
-   * named "Dr. Pepper" would have the fullname  "Dr\.\032Pepper._http._tcp.local.".)
-   * See DNSSD::Service.fullname() for more information. */
-  rb_define_attr(cDNSSDReply, "fullname", 1, 0);
-  /* The service's primary text record, see DNSSD::TextRecord for more information. */
-  rb_define_attr(cDNSSDReply, "text_record", 1, 0);
-  /* The target hostname of the machine providing the service.
-   * This name can be passed to functions like Socket.gethostbyname()
-   * to identify the host's IP address. */
-  rb_define_attr(cDNSSDReply, "target", 1, 0);
-  /* The port on which connections are accepted for this service. */
-  rb_define_attr(cDNSSDReply, "port", 1, 0);
 
-  rb_define_method(cDNSSDReply, "inspect", reply_inspect, 0);
+  cDNSSDFlags = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
 
   /* flag constants */
 #if DNSSD_MAX_FLAGS != 9
 #error The code below needs to be updated.
 #endif
-  /* MoreComing indicates that at least one more result is queued and will be delivered following immediately after this one.
-   * Applications should not update their UI to display browse
-   * results when the MoreComing flag is set, because this would
-   * result in a great deal of ugly flickering on the screen.
-   * Applications should instead wait until until MoreComing is not set,
-   * and then update their UI.
+
+  /* MoreComing indicates that at least one more result is queued and will be
+   * delivered following immediately after this one.
+   *
+   * Applications should not update their UI to display browse results when the
+   * MoreComing flag is set, because this would result in a great deal of ugly
+   * flickering on the screen.  Applications should instead wait until
+   * MoreComing is not set, and then update their UI.
+   *
    * When MoreComing is not set, that doesn't mean there will be no more
-   * answers EVER, just that there are no more answers immediately
-   * available right now at this instant. If more answers become available
-   * in the future they will be delivered as usual.
+   * answers EVER, just that there are no more answers immediately available
+   * right now at this instant.  If more answers become available in the future
+   * they will be delivered as usual.
    */
-  rb_define_const(cDNSSDFlags, "MoreComing", ULONG2NUM(kDNSServiceFlagsMoreComing));
+  rb_define_const(cDNSSDFlags, "MoreComing",
+		  ULONG2NUM(kDNSServiceFlagsMoreComing));
 
-
-  /* Flags for domain enumeration and DNSSD.browse() reply callbacks.
-   * DNSSD::Flags::Default applies only to enumeration and is only valid in
-   * conjuction with DNSSD::Flags::Add.  An enumeration callback with the DNSSD::Flags::Add
-   * flag NOT set indicates a DNSSD::Flags::Remove, i.e. the domain is no longer valid.
+  /* Applies only to enumeration.  An enumeration callback with the
+   * DNSSD::Flags::Add flag NOT set indicates a DNSSD::Flags::Remove, i.e. the
+   * domain is no longer valid.
    */
   rb_define_const(cDNSSDFlags, "Add", ULONG2NUM(kDNSServiceFlagsAdd));
+
+  /* Applies only to enumeration and is only valid in conjunction with Add
+   */
   rb_define_const(cDNSSDFlags, "Default", ULONG2NUM(kDNSServiceFlagsDefault));
 
-  /* Flag for specifying renaming behavior on name conflict when registering non-shared records.
-   * By default, name conflicts are automatically handled by renaming the service.
-   * DNSSD::Flags::NoAutoRename overrides this behavior - with this
+  /* Flag for specifying renaming behavior on name conflict when registering
+   * non-shared records.
+   *
+   * By default, name conflicts are automatically handled by renaming the
+   * service.  DNSSD::Flags::NoAutoRename overrides this behavior - with this
    * flag set, name conflicts will result in a callback.  The NoAutoRename flag
    * is only valid if a name is explicitly specified when registering a service
    * (ie the default name is not used.)
    */
-  rb_define_const(cDNSSDFlags, "NoAutoRename", ULONG2NUM(kDNSServiceFlagsNoAutoRename));
+  rb_define_const(cDNSSDFlags, "NoAutoRename",
+		  ULONG2NUM(kDNSServiceFlagsNoAutoRename));
 
   /* Flag for registering individual records on a connected DNSServiceRef.
-   * DNSSD::Flags::Shared indicates that there may be multiple records
-   * with this name on the network (e.g. PTR records).  DNSSD::Flags::Unique indicates that the
-   * record's name is to be unique on the network (e.g. SRV records).
-   * (DNSSD::Flags::Shared and DNSSD::Flags::Unique are currently not used by the Ruby API.)
+   *
+   * DNSSD::Flags::Shared indicates that there may be multiple records with
+   * this name on the network (e.g. PTR records).  DNSSD::Flags::Unique
+   * indicates that the record's name is to be unique on the network (e.g. SRV
+   * records).  (DNSSD::Flags::Shared and DNSSD::Flags::Unique are currently
+   * not used by the Ruby API.)
    */
   rb_define_const(cDNSSDFlags, "Shared", ULONG2NUM(kDNSServiceFlagsShared));
   rb_define_const(cDNSSDFlags, "Unique", ULONG2NUM(kDNSServiceFlagsUnique));
 
-  /* Flags for specifying domain enumeration type in DNSSD.enumerate_domains()
-   * (currently not part of the Ruby API).
-   * DNSSD::Flags::BrowseDomains enumerates domains recommended for browsing,
-   * DNSSD::Flags::RegistrationDomains enumerates domains recommended for registration.
+  /* DNSSD::Flags::BrowseDomains enumerates domains recommended for browsing
    */
-  rb_define_const(cDNSSDFlags, "BrowseDomains", ULONG2NUM(kDNSServiceFlagsBrowseDomains));
-  rb_define_const(cDNSSDFlags, "RegistrationDomains", ULONG2NUM(kDNSServiceFlagsRegistrationDomains));
+  rb_define_const(cDNSSDFlags, "BrowseDomains",
+		  ULONG2NUM(kDNSServiceFlagsBrowseDomains));
+
+  /* DNSSD::Flags::RegistrationDomains enumerates domains recommended for
+   * registration.
+   */
+
+  rb_define_const(cDNSSDFlags, "RegistrationDomains",
+		  ULONG2NUM(kDNSServiceFlagsRegistrationDomains));
 
   /* Flag for creating a long-lived unicast query for the DNSDS.query_record()
    * (currently not part of the Ruby API). */
-  rb_define_const(cDNSSDFlags, "LongLivedQuery", ULONG2NUM(kDNSServiceFlagsLongLivedQuery));
+  rb_define_const(cDNSSDFlags, "LongLivedQuery",
+		  ULONG2NUM(kDNSServiceFlagsLongLivedQuery));
 
   flags_hash = rb_hash_new();
 
@@ -388,10 +338,4 @@ Init_DNSSD_Replies(void) {
 
   rb_define_const(cDNSSDFlags, "FLAGS", flags_hash);
 }
-
-/* Document-class: DNSSD::Reply
- *
- * DNSSD::Reply is used to return information
- *
- */
 

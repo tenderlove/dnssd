@@ -195,6 +195,11 @@ dnssd_service_process(VALUE service) {
   DNSServiceRef *client;
   GetDNSSDService(service, client);
 
+  if (client == NULL) {
+    /* looks like this thread has already been stopped */
+    return Qnil;
+  }
+
   dns_sd_fd = DNSServiceRefSockFD(*client);
   nfds = dns_sd_fd + 1;
   for ( ;; ) {
@@ -213,6 +218,7 @@ dnssd_service_process(VALUE service) {
       break;
     }
   }
+
   /* return the result from the processing */
   return rb_ivar_get(service, dnssd_iv_result);
 }
@@ -561,7 +567,7 @@ dnssd_register(int argc, VALUE * argv, VALUE self) {
 }
 
 static void DNSSD_API
-dnssd_resolve_reply (DNSServiceRef client, DNSServiceFlags flags,
+dnssd_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
     uint32_t interface_index, DNSServiceErrorType e,
     const char *fullname, const char *host_target,
     uint16_t opaqueport, uint16_t txt_len,
