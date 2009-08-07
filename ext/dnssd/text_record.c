@@ -211,13 +211,15 @@ dnssd_tr_encode(VALUE self) {
   return buf;
 }
 
+/* decodes a buffer, creating a new text record */
 VALUE
-  dnssd_tr_to_encoded_str(VALUE v) {
-    if (rb_obj_is_kind_of(v, rb_cHash) == Qtrue)
-      return dnssd_tr_encode(v);
-    /* allow the user to use arbitrary strings as text records */
-    return StringValue(v);
-  }
+dnssd_tr_to_encoded_str(VALUE v) {
+  if (rb_obj_is_kind_of(v, rb_cHash) == Qtrue)
+    return dnssd_tr_encode(v);
+
+  /* allow the user to use arbitrary strings as text records */
+  return StringValue(v);
+}
 
 /*
  * Document-class: DNSSD::TextRecord
@@ -233,6 +235,7 @@ Init_DNSSD_TextRecord(void) {
 #ifdef mDNSSD_RDOC_HACK
   mDNSSD = rb_define_module("DNSSD");
 #endif
+
   cDNSSDTextRecord = rb_define_class_under(mDNSSD, "TextRecord", rb_cHash);
 
   rb_define_singleton_method(cDNSSDTextRecord, "decode", dnssd_tr_decode, 1);

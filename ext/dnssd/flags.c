@@ -33,7 +33,7 @@ static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
 };
 
 void
-Init_DNSSD_Replies(void) {
+Init_DNSSD_Flags(void) {
   int i;
   VALUE flags_hash;
   VALUE cDNSSDFlags;

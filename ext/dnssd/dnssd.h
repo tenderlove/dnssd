@@ -30,9 +30,6 @@ extern VALUE eDNSSDError;
 void dnssd_check_error_code(DNSServiceErrorType e);
 void dnssd_instantiation_error(const char *what);
 
-VALUE dnssd_split_fullname(VALUE fullname);
-
-/* decodes a buffer, creating a new text record */
 VALUE dnssd_tr_new(long len, const char *buf);
 
 VALUE dnssd_tr_to_encoded_str(VALUE v);
