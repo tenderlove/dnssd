@@ -29,9 +29,5 @@ extern VALUE eDNSSDError;
 void dnssd_check_error_code(DNSServiceErrorType e);
 void dnssd_instantiation_error(const char *what);
 
-VALUE dnssd_tr_new(long len, const char *buf);
-
-VALUE dnssd_tr_to_encoded_str(VALUE v);
-
 #endif /* RDNSSD_INCLUDED */
 

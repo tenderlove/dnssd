@@ -8,8 +8,10 @@
 
 static VALUE cDNSSDReply;
 static VALUE cDNSSDService;
+static VALUE cDNSSDTextRecord;
 
 static ID dnssd_id_call;
+static ID dnssd_id_encode;
 static ID dnssd_id_to_i;
 static ID dnssd_id_to_str;
 
@@ -75,14 +77,14 @@ dnssd_service_s_fullname(VALUE klass, VALUE name, VALUE type, VALUE domain) {
 }
 
 static VALUE
+text_record_new(VALUE text_record) {
+  return rb_funcall(cDNSSDTextRecord, rb_intern("new"), 1, text_record);
+}
+
+static VALUE
 reply_new(VALUE service, DNSServiceFlags flags) {
   return rb_funcall(cDNSSDReply, rb_intern("from_service"), 2, service,
                     UINT2NUM(flags));
-}
-
-static void
-reply_set_tr(VALUE self, uint16_t txt_len, const char *txt_rec) {
-  rb_ivar_set(self, dnssd_iv_text_record, dnssd_tr_new((long)txt_len, txt_rec));
 }
 
 static void
@@ -127,9 +129,11 @@ reply_from_register(VALUE service, DNSServiceFlags flags,
       rb_str_new2(regtype), rb_str_new2(domain));
   /* HACK */
   /* See HACK in dnssd_service.c */
-  rb_ivar_set(self, dnssd_iv_interface, rb_ivar_get(service, dnssd_iv_interface));
+  rb_ivar_set(self, dnssd_iv_interface,
+      rb_ivar_get(service, dnssd_iv_interface));
   rb_ivar_set(self, dnssd_iv_port, rb_ivar_get(service, dnssd_iv_port));
-  rb_ivar_set(self, dnssd_iv_text_record, rb_ivar_get(service, dnssd_iv_text_record));
+  rb_ivar_set(self, dnssd_iv_text_record,
+      rb_ivar_get(service, dnssd_iv_text_record));
   /********/
   return self;
 }
@@ -145,7 +149,8 @@ reply_from_resolve(VALUE service, DNSServiceFlags flags, uint32_t
   rb_funcall(self, rb_intern("set_fullname"), 1, rb_str_new2(fullname));
   rb_ivar_set(self, dnssd_iv_target, rb_str_new2(host_target));
   rb_ivar_set(self, dnssd_iv_port, UINT2NUM(port));
-  reply_set_tr(self, txt_len, txt_rec);
+  rb_ivar_set(self, dnssd_iv_text_record,
+      text_record_new(rb_str_new(txt_rec, txt_len)));
 
   return self;
 }
@@ -574,7 +579,7 @@ sd_register(int argc, VALUE *argv, VALUE service) {
 
   /* optional parameters */
   if (!NIL_P(text_record)) {
-    text_record = dnssd_tr_to_encoded_str(text_record);
+    text_record = rb_funcall(text_record, dnssd_id_encode, 0);
     txt_rec = RSTRING_PTR(text_record);
     txt_len = RSTRING_LEN(text_record);
   }
@@ -756,6 +761,7 @@ Init_DNSSD_Service(void) {
   VALUE mDNSSD = rb_define_module("DNSSD");
 
   dnssd_id_call        = rb_intern("call");
+  dnssd_id_encode      = rb_intern("encode");
   dnssd_id_to_i        = rb_intern("to_i");
   dnssd_id_to_str      = rb_intern("to_str");
 
@@ -769,9 +775,9 @@ Init_DNSSD_Service(void) {
   dnssd_iv_text_record = rb_intern("@text_record");
   dnssd_iv_thread      = rb_intern("@thread");
 
-  cDNSSDReply = rb_define_class_under(mDNSSD, "Reply", rb_cObject);
-
-  cDNSSDService = rb_define_class_under(mDNSSD, "Service", rb_cObject);
+  cDNSSDReply      = rb_define_class_under(mDNSSD, "Reply",      rb_cObject);
+  cDNSSDService    = rb_define_class_under(mDNSSD, "Service",    rb_cObject);
+  cDNSSDTextRecord = rb_define_class_under(mDNSSD, "TextRecord", rb_cObject);
 
   rb_define_singleton_method(cDNSSDService, "new", dnssd_service_new, -1);
   rb_define_singleton_method(cDNSSDService, "fullname", dnssd_service_s_fullname, 3);

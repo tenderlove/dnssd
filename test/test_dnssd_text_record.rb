@@ -3,53 +3,80 @@ require 'dnssd'
 
 class TestDNSSDTextRecord < MiniTest::Unit::TestCase
 
-  def test_text_record
-    tr = DNSSD::TextRecord.new
-    tr["key"]="value"
-    enc_str = ["key", "value"].join('=')
-    enc_str = enc_str.length.chr << enc_str
-    assert_equal(enc_str, tr.encode)
+  def setup
+    @TR = DNSSD::TextRecord
+  end
 
-    # should raise type error
-    assert_raises TypeError do
-      DNSSD::TextRecord.decode :HEY
+  def test_encode
+    tr = @TR.new
+
+    tr['key1'] = nil
+    tr['key2'] = ''
+    tr['key3'] = 'value'
+
+    assert_equal "\004key1\005key2=\012key3=value", tr.encode
+  end
+
+  def test_encode_long
+    tr = @TR.new
+
+    tr['key'] = 'X' * 252
+
+    e = assert_raises DNSSD::Error do
+      tr.encode
     end
 
-    tr_new = DNSSD::TextRecord.decode enc_str
+    assert_equal 'key value pair at \'key\' too large to encode', e.message
+  end
 
-    assert_equal tr_new, tr
+  def test_decode
+    text_record = "\fstatus=avail\006email=\004jid=\005node=\tversion=1\ttxtvers=1\016port.p2pj=5298\0161st=Eric Hodel\005nick=\004AIM=\005last=-phsh=59272d0c3ed947b4660fabc0dad9d67647507299\004ext="
 
-    # new called with just a string should be the same as decode.
+    expected = {
+      'status'    => 'avail',
+      'ext'       => '',
+      'node'      => '',
+      'nick'      => '',
+      'last'      => '',
+      'txtvers'   => '1',
+      'AIM'       => '',
+      'jid'       => '',
+      'phsh'      => '59272d0c3ed947b4660fabc0dad9d67647507299',
+      'version'   => '1',
+      '1st'       => 'Eric Hodel',
+      'port.p2pj' => '5298',
+      'email'     => ''
+    }
 
-    tr_new = DNSSD::TextRecord.new enc_str
-    assert_equal tr_new, tr
+    assert_equal expected, @TR.new(text_record).to_hash
+  end
+
+  def test_decode_bad
+    assert_raises ArgumentError do
+      @TR.new("\x01") # length past end-of-record
+    end
+
+    assert_raises ArgumentError do
+      # no key
+      @TR.new("\x01=")
+    end
+
+    assert_raises ArgumentError do
+      # 0-length key
+      @TR.new("\x02=v")
+    end
   end
 
   def test_decode_empty
-    # text records with N 0-length entries
-    DNSSD::TextRecord.new("")
-    DNSSD::TextRecord.new("\x00")
-    DNSSD::TextRecord.new("\x00\x00")
+    assert_equal({}, @TR.new("").to_hash)
+    assert_equal({}, @TR.new("\x00").to_hash)
+    assert_equal({}, @TR.new("\x00\x00").to_hash)
+  end
 
-    # 0-length string, key-value string
-    DNSSD::TextRecord.new("\x00\x01k")
-    DNSSD::TextRecord.new("\x00\x02k=")
-    DNSSD::TextRecord.new("\x00\x03k=v")
-
-    assert_raises ArgumentError do
-      # length past end-of-record
-      DNSSD::TextRecord.new("\x00\x01")
-    end
-
-    assert_raises ArgumentError do
-      # 0-length string, no key
-      DNSSD::TextRecord.new("\x00\x01=")
-    end
-
-    assert_raises ArgumentError do
-      # 0-length string, no key
-      DNSSD::TextRecord.new("\x00\x02=v")
-    end
+  def test_decode_value
+    assert_equal({ 'k' => nil }, @TR.new("\x01k").to_hash)
+    assert_equal({ 'k' => ''  }, @TR.new("\x02k=").to_hash)
+    assert_equal({ 'k' => 'v' }, @TR.new("\x03k=v").to_hash)
   end
 
 end
