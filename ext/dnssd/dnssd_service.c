@@ -1,11 +1,3 @@
-/*
- * Ruby Rendezvous Binding
- *
- * Copyright (c) 2004 Chad Fowler, Charles Mills, Rich Kilmer
- * Licenced under the same terms as Ruby.
- * This software has absolutely no warranty.
- */
-
 #include "dnssd.h"
 #include <assert.h>
 

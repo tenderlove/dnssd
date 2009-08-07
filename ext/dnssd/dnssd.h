@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2004 Chad Fowler, Charles Mills, Rich Kilmer
- * Licenced under the same terms as Ruby.
- * This software has absolutely no warrenty.
- */
 #ifndef RDNSSD_INCLUDED
 #define RDNSSD_INCLUDED
 

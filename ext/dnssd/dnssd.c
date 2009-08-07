@@ -1,13 +1,3 @@
-/*
- * == Authors
- * Chad Fowler, Charles Mills, Rich Kilmer
- *
- * == Copyright
- * Copyright (c) 2004 Chad Fowler, Charles Mills, Rich Kilmer
- * Licensed under the same terms as Ruby.
- * This software has absolutely no warranty.
- */
-
 #include "dnssd.h"
 #include <assert.h>
 
