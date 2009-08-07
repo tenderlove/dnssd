@@ -22,7 +22,6 @@ class ChatNameResolver
 end
 
 browser = DNSSD.browse '_presence._tcp' do |reply|
-  p :browsing => reply
   if reply.flags.add? then
     ChatNameResolver.resolve_add reply
   else

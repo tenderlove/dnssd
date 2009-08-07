@@ -18,7 +18,7 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
   def test_fullname
     @reply.set_fullname @fullname
 
-    assert_equal "Dr.\032Pepper._http._tcp.local.", @reply.fullname
+    assert_equal "Dr\\.\\032Pepper._http._tcp.local.", @reply.fullname
   end
 
   def test_inspect
@@ -30,7 +30,7 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
     @reply.instance_variable_set :@flags,     flags
     @reply.instance_variable_set :@type,      '_presence._tcp'
 
-    expected = "#<DNSSD::Reply drbrain@pincer-tip type: _presence._tcp domain: local interface: en2 flags: #{flags}>"
+    expected = "#<DNSSD::Reply:0x#{@reply.object_id.to_s 16} \"drbrain@pincer-tip\" type: _presence._tcp domain: local interface: en2 flags: #{flags}>"
     assert_equal expected, @reply.inspect
   end
 

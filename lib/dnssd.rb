@@ -12,6 +12,7 @@ end
 
 require 'dnssd/flags'
 require 'dnssd/reply'
+require 'dnssd/service'
 
 =begin
 

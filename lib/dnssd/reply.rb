@@ -59,12 +59,12 @@ class DNSSD::Reply
   # The full service domain name, see DNSS::Service#fullname
 
   def fullname
-    [@name, @type, @domain].join '.'
+    DNSSD::Service.fullname @name.gsub("\032", ' '), @type, @domain
   end
 
   def inspect
-    "#<%s %s type: %s domain: %s interface: %s flags: %s>" % [
-      self.class, @name, @type, @domain, @interface, @flags
+    "#<%s:0x%x %p type: %s domain: %s interface: %s flags: %s>" % [
+      self.class, object_id, @name, @type, @domain, @interface, @flags
     ]
   end
 
