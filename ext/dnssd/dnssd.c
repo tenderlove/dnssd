@@ -7,7 +7,7 @@ void Init_DNSSD_TextRecord(void);
 
 void
 Init_dnssd(void) {
-  rb_define_module("DNSSD");
+  VALUE mDNSSD = rb_define_module("DNSSD");
 
   /* Specifies all interfaces. */
   rb_define_const(mDNSSD, "InterfaceAny", ULONG2NUM(kDNSServiceInterfaceIndexAny));
@@ -15,7 +15,6 @@ Init_dnssd(void) {
   /* Specifies local interfaces only. */
   rb_define_const(mDNSSD, "InterfaceLocalOnly", ULONG2NUM(kDNSServiceInterfaceIndexLocalOnly));
 
-  Init_DNSSD();
   Init_DNSSD_Errors();
   Init_DNSSD_Service();
   Init_DNSSD_TextRecord();

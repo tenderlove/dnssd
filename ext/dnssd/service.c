@@ -753,10 +753,7 @@ dnssd_resolve(int argc, VALUE * argv, VALUE self) {
 
 void
 Init_DNSSD_Service(void) {
-  /* hack so rdoc documents the project correctly */
-#ifdef mDNSSD_RDOC_HACK
-  mDNSSD = rb_define_module("DNSSD");
-#endif
+  VALUE mDNSSD = rb_define_module("DNSSD");
 
   dnssd_id_call        = rb_intern("call");
   dnssd_id_to_i        = rb_intern("to_i");

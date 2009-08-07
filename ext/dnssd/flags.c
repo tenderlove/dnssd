@@ -37,11 +37,7 @@ Init_DNSSD_Flags(void) {
   int i;
   VALUE flags_hash;
   VALUE cDNSSDFlags;
-
-  /* hack so rdoc documents the project correctly */
-#ifdef mDNSSD_RDOC_HACK
-  mDNSSD = rb_define_module("DNSSD");
-#endif
+  VALUE mDNSSD = rb_define_module("DNSSD");
 
   cDNSSDFlags = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
 

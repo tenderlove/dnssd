@@ -46,6 +46,7 @@ dnssd_instantiation_error(const char *what) {
 void
 Init_DNSSD_Errors(void) {
   VALUE error_class;
+  VALUE mDNSSD = rb_define_module("DNSSD");
 
   eDNSSDError = rb_define_class_under(mDNSSD, "Error", rb_eStandardError);
 

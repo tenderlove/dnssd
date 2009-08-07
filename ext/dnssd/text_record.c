@@ -231,10 +231,7 @@ dnssd_tr_to_encoded_str(VALUE v) {
 
 void
 Init_DNSSD_TextRecord(void) {
-  /* hack so rdoc documents the project correctly */
-#ifdef mDNSSD_RDOC_HACK
-  mDNSSD = rb_define_module("DNSSD");
-#endif
+  VALUE mDNSSD = rb_define_module("DNSSD");
 
   cDNSSDTextRecord = rb_define_class_under(mDNSSD, "TextRecord", rb_cHash);
 

@@ -24,7 +24,6 @@
 #include <sys/if.h>
 #endif
 
-extern VALUE mDNSSD;
 extern VALUE eDNSSDError;
 
 void dnssd_check_error_code(DNSServiceErrorType e);
