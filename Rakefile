@@ -31,4 +31,6 @@ Rake::ExtensionTask.new 'dnssd', HOE.spec do |ext|
   ext.lib_dir = File.join 'lib', 'dnssd'
 end
 
+task :test => :compile
+
 # vim: syntax=Ruby

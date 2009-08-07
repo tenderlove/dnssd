@@ -52,7 +52,8 @@ static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
 };
 
 VALUE
-dnssd_create_fullname(const char *name, const char *regtype, const char *domain, int err_flag) {
+dnssd_create_fullname(const char *name, const char *regtype,
+    const char *domain, int err_flag) {
   char buffer[kDNSServiceMaxDomainName];
   if ( DNSServiceConstructFullName(buffer, name, regtype, domain) ) {
     static const char msg[] = "could not construct full service name";
@@ -70,61 +71,6 @@ dnssd_create_fullname(const char *name, const char *regtype, const char *domain,
   }
   buffer[kDNSServiceMaxDomainName - 1] = '\000'; /* just in case */
   return rb_str_new2(buffer);
-}
-
-#if 0
-  static void
-quote_and_append(VALUE buf, VALUE str)
-{
-  const char *ptr;
-  long i, last_mark, len;
-
-  ptr = RSTRING_PTR(str);
-  len = RSTRING_LEN(str);
-  last_mark = 0;
-  /* last character should be '.' */
-  for (i=0; i<len-1; i++) {
-    if (ptr[i] == '.') {
-      /* write 1 extra character and replace it with '\\' */
-      rb_str_buf_cat(buf, ptr + last_mark, i + 1 - last_mark);
-      RSTRING_PTR(buf)[i] = '\\';
-      last_mark = i;
-    }
-  }
-  rb_str_buf_cat(buf, ptr + last_mark, len - last_mark);
-}
-#endif
-
-static VALUE
-dnssd_join_names(int argc, VALUE *argv) {
-  int i;
-  VALUE buf;
-  long len = 0;
-
-  for (i=0; i<argc; i++) {
-    argv[i] = StringValue(argv[i]);
-    len += RSTRING_LEN(argv[i]);
-  }
-  buf = rb_str_buf_new(len);
-  for (i=0; i<argc; i++) {
-    rb_str_buf_append(buf, argv[i]);
-  }
-  return buf;
-}
-
-static void
-reply_add_names(VALUE self, const char *name,
-    const char *regtype, const char *domain) {
-  rb_ivar_set(self, dnssd_iv_name, rb_str_new2(name));
-  rb_ivar_set(self, dnssd_iv_type, rb_str_new2(regtype));
-  rb_ivar_set(self, dnssd_iv_domain, rb_str_new2(domain));
-  rb_ivar_set(self, dnssd_iv_fullname, dnssd_create_fullname(name, regtype, domain, 0));
-}
-
-static void
-reply_add_names2(VALUE self, const char *fullname) {
-  VALUE fn = rb_str_new2(fullname);
-  rb_funcall(self, rb_intern("set_fullname"), 1, fn);
 }
 
 static void
@@ -146,57 +92,36 @@ reply_set_tr(VALUE self, uint16_t txt_len, const char *txt_rec) {
 
 static VALUE
 reply_new(VALUE service, DNSServiceFlags flags) {
-  VALUE self = rb_obj_alloc(cDNSSDReply);
-  rb_ivar_set(self, dnssd_iv_service, service);
-  rb_ivar_set(self, dnssd_iv_flags,
-              rb_funcall(cDNSSDFlags, rb_intern("new"), 1, flags));
-  return self;
+  return rb_funcall(cDNSSDReply, rb_intern("from_service"), 2, service,
+                    UINT2NUM(flags));
 }
 
 VALUE
-dnssd_domain_enum_new(VALUE service, DNSServiceFlags flags,
+dnssd_reply_from_domain_enum(VALUE service, DNSServiceFlags flags,
     uint32_t interface, const char *domain) {
-  VALUE d, self = reply_new(service, flags);
+  VALUE self = reply_new(service, flags);
   reply_set_interface(self, interface);
-  d = rb_str_new2(domain);
-  rb_ivar_set(self, dnssd_iv_domain, d);
-  rb_ivar_set(self, dnssd_iv_fullname, d);
+  rb_ivar_set(self, dnssd_iv_domain, rb_str_new2(domain));
   return self;
 }
 
 VALUE
-dnssd_browse_new(VALUE service, DNSServiceFlags flags, uint32_t interface,
+dnssd_reply_from_browse(VALUE service, DNSServiceFlags flags,
+    uint32_t interface, const char *name, const char *regtype,
+    const char *domain) {
+  VALUE self = reply_new(service, flags);
+  reply_set_interface(self, interface);
+  rb_funcall(self, rb_intern("set_names"), 3, rb_str_new2(name),
+      rb_str_new2(regtype), rb_str_new2(domain));
+  return self;
+}
+
+VALUE
+dnssd_reply_from_register(VALUE service, DNSServiceFlags flags,
     const char *name, const char *regtype, const char *domain) {
   VALUE self = reply_new(service, flags);
-  reply_set_interface(self, interface);
-  reply_add_names(self, name, regtype, domain);
-  return self;
-}
-
-#if 0
-  static VALUE
-dnssd_gethostname(void)
-{
-#if HAVE_GETHOSTNAME
-#ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN 256
-#endif
-  char buffer[MAXHOSTNAMELEN + 1];
-  if (gethostname(buffer, MAXHOSTNAMELEN))
-    return Qnil;
-  buffer[MAXHOSTNAMELEN] = '\000';
-  return rb_str_new2(buffer);
-#else
-  return Qnil;
-#endif
-}
-#endif
-
-VALUE
-dnssd_register_new(VALUE service, DNSServiceFlags flags, const char *name,
-    const char *regtype, const char *domain) {
-  VALUE self = reply_new(service, flags);
-  reply_add_names(self, name, regtype, domain);
+  rb_funcall(self, rb_intern("set_names"), 3, rb_str_new2(name),
+      rb_str_new2(regtype), rb_str_new2(domain));
   /* HACK */
   /* See HACK in dnssd_service.c */
   rb_ivar_set(self, dnssd_iv_interface, rb_ivar_get(service, dnssd_iv_interface));
@@ -207,28 +132,19 @@ dnssd_register_new(VALUE service, DNSServiceFlags flags, const char *name,
 }
 
 VALUE
-dnssd_resolve_new(VALUE service, DNSServiceFlags flags, uint32_t interface,
-    const char *fullname, const char *host_target,
-    uint16_t opaqueport, uint16_t txt_len, const char *txt_rec) {
+dnssd_reply_from_resolve(VALUE service, DNSServiceFlags flags, uint32_t
+    interface, const char *fullname, const char *host_target, uint16_t
+    opaqueport, uint16_t txt_len, const char *txt_rec) {
   uint16_t port = ntohs(opaqueport);
   VALUE self = reply_new(service, flags);
+
   reply_set_interface(self, interface);
-  reply_add_names2(self, fullname);
+  rb_funcall(self, rb_intern("set_fullname"), 1, rb_str_new2(fullname));
   rb_ivar_set(self, dnssd_iv_target, rb_str_new2(host_target));
   rb_ivar_set(self, dnssd_iv_port, UINT2NUM(port));
   reply_set_tr(self, txt_len, txt_rec);
-  return self;
-}
 
-/*
- * call-seq:
- *    DNSSD::Reply.new() => raises a RuntimeError
- *
- */
-static VALUE
-reply_initialize(int argc, VALUE *argv, VALUE reply) {
-  dnssd_instantiation_error(rb_obj_classname(reply));
-  return Qnil;
+  return self;
 }
 
 void
@@ -252,9 +168,6 @@ Init_DNSSD_Replies(void) {
   dnssd_iv_service = rb_intern("@service");
 
   cDNSSDReply = rb_define_class_under(mDNSSD, "Reply", rb_cObject);
-  /* DNSSD::Reply objects can only be instantiated by
-   * DNSSD.browse(), DNSSD.register(), DNSSD.resolve(), DNSSD.enumerate_domains(). */
-  rb_define_method(cDNSSDReply, "initialize", reply_initialize, -1);
 
   cDNSSDFlags = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
 

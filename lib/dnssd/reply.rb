@@ -48,6 +48,13 @@ class DNSSD::Reply
 
   attr_reader :type
 
+  def self.from_service(service, flags)
+    reply = new
+    reply.instance_variable_set :@service, service
+    reply.instance_variable_set :@flags, DNSSD::Flags.new(flags)
+    reply
+  end
+
   ##
   # The full service domain name, see DNSS::Service#fullname
 
@@ -69,6 +76,10 @@ class DNSSD::Reply
     @name   = fullname[0]
     @type   = fullname[1,   2].join '.'
     @domain = fullname.last + '.'
+  end
+
+  def set_names(name, type, domain)
+    set_fullname [name, type, domain].join('.')
   end
 
 end

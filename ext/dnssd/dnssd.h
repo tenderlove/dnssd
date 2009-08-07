@@ -43,17 +43,18 @@ VALUE dnssd_tr_new(long len, const char *buf);
 
 VALUE dnssd_tr_to_encoded_str(VALUE v);
 
-VALUE dnssd_domain_enum_new(VALUE service, DNSServiceFlags flags,
+VALUE dnssd_reply_from_domain_enum(VALUE service, DNSServiceFlags flags,
     uint32_t interface, const char *domain);
 
-VALUE dnssd_browse_new(VALUE service, DNSServiceFlags flags, uint32_t interface,
+VALUE dnssd_reply_from_browse(VALUE service, DNSServiceFlags flags,
+    uint32_t interface, const char *name, const char *regtype,
+    const char *domain);
+
+VALUE dnssd_reply_from_register(VALUE service, DNSServiceFlags flags,
     const char *name, const char *regtype, const char *domain);
 
-VALUE dnssd_register_new(VALUE service, DNSServiceFlags flags, const char *name,
-    const char *regtype, const char *domain);
-
-VALUE dnssd_resolve_new(VALUE service, DNSServiceFlags flags, uint32_t interface,
-    const char *fullname, const char *host_target,
+VALUE dnssd_reply_from_resolve(VALUE service, DNSServiceFlags flags,
+    uint32_t interface, const char *fullname, const char *host_target,
     uint16_t opaqueport, uint16_t txt_len, const char *txt_rec);
 
 #endif /* RDNSSD_INCLUDED */

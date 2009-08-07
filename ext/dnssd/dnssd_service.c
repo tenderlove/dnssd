@@ -279,7 +279,8 @@ dnssd_domain_enum_reply(DNSServiceRef sdRef, DNSServiceFlags flags,
   /* other parameters are undefined if errorCode != 0 */
   dnssd_check_error_code(e);
   service = (VALUE)context;
-  dnssd_callback(service, dnssd_domain_enum_new(service, flags, interface_index, domain));
+  dnssd_callback(service,
+      dnssd_reply_from_domain_enum(service, flags, interface_index, domain));
 }
 
 static VALUE
@@ -369,8 +370,8 @@ dnssd_browse_reply (DNSServiceRef client, DNSServiceFlags flags,
   dnssd_check_error_code(e);
   service = (VALUE)context;
   dnssd_callback(service,
-      dnssd_browse_new (service, flags, interface_index, name, type, domain)
-      );
+      dnssd_reply_from_browse(service, flags, interface_index, name, type,
+        domain));
 }
 
 static VALUE
@@ -459,7 +460,8 @@ dnssd_register_reply (DNSServiceRef client, DNSServiceFlags flags,
   /* other parameters are undefined if errorCode != 0 */
   dnssd_check_error_code(e);
   service = (VALUE)context;
-  dnssd_callback(service, dnssd_register_new(service, flags, name, regtype, domain));
+  dnssd_callback(service,
+      dnssd_reply_from_register(service, flags, name, regtype, domain));
 }
 
 static VALUE
@@ -577,9 +579,8 @@ dnssd_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
   dnssd_check_error_code(e);
   service = (VALUE)context;
   dnssd_callback(service,
-      dnssd_resolve_new(service, flags, interface_index, fullname,
-        host_target, opaqueport, txt_len, txt_rec)
-      );
+      dnssd_relpy_from_resolve(service, flags, interface_index, fullname,
+        host_target, opaqueport, txt_len, txt_rec));
 }
 
 static VALUE
