@@ -5,7 +5,7 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
 
   def setup
     @reply = DNSSD::Reply.new
-    @fullname = "Dr\\\.\032Pepper._http._tcp.local."
+    @fullname = "Eric\\032Hodel._http._tcp.local."
   end
 
   def test_class_from_service
@@ -17,6 +17,10 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
 
   def test_fullname
     @reply.set_fullname @fullname
+
+    assert_equal "Eric\\032Hodel._http._tcp.local.", @reply.fullname
+
+    @reply.instance_variable_set :@name, 'Dr. Pepper'
 
     assert_equal "Dr\\.\\032Pepper._http._tcp.local.", @reply.fullname
   end
@@ -37,7 +41,13 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
   def test_set_fullname
     @reply.set_fullname @fullname
 
-    assert_equal "Dr.\032Pepper", @reply.name
+    assert_equal 'Eric Hodel', @reply.name
+    assert_equal '_http._tcp', @reply.type
+    assert_equal 'local.', @reply.domain
+
+    @reply.set_fullname "Dr\\.\\032Pepper._http._tcp.local."
+
+    assert_equal 'Dr. Pepper', @reply.name
     assert_equal '_http._tcp', @reply.type
     assert_equal 'local.', @reply.domain
   end

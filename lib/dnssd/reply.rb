@@ -69,6 +69,7 @@ class DNSSD::Reply
   end
 
   def set_fullname(fullname)
+    fullname = fullname.gsub(/\\([0-9]+)/) do $1.to_i.chr end
     fullname = fullname.scan(/(?:[^\\.]|\\\.)+/).map do |part|
       part.gsub "\\.", '.'
     end
