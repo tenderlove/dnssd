@@ -46,7 +46,7 @@ class DNSSD::TextRecord
   # clients.
 
   def encode
-    @records.map do |key, value|
+    @records.sort.map do |key, value|
       key = key.to_s
 
       raise DNSSD::Error, "empty key" if key.empty?

@@ -7,7 +7,7 @@ require 'dnssd/dnssd'
 # Service Discovery aware.
 
 module DNSSD
-  VERSION = '1.0'
+  VERSION = '1.1.0'
 end
 
 require 'dnssd/flags'
