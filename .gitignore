@@ -1,7 +1,8 @@
-/lib/dnssd/dnssd.bundle
-/lib/dnssd/dnssd.so
-/lib/dnssd/dnssd.dll
-/tmp
-/TAGS
 *.swp
+/TAGS
+/lib/dnssd/dnssd.bundle
+/lib/dnssd/dnssd.dll
+/lib/dnssd/dnssd.so
+/pkg
+/tmp
 
