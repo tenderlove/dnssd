@@ -23,6 +23,9 @@
 #ifdef HAVE_SYS_IF_H
 #include <sys/if.h>
 #endif
+#ifdef HAVE_NETDB_H
+#include <netdb.h>
+#endif
 
 extern VALUE eDNSSDError;
 
