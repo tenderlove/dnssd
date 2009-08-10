@@ -1,3 +1,15 @@
+=== 1.1.0 / 2009-08-10
+
+* 2 Major enhancements
+  * Packaging files that need to be here
+  * Increased the version number
+
+* 1 Minor enhancement
+  * Less C codes
+
+* 1 Bugfix
+  * Increased INTERNET!
+
 === 0.7.2 / 2009-08-05
 
 * 1 major enhancement
