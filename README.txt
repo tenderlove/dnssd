@@ -10,7 +10,7 @@ resolving, registration and domain enumeration.
 
 == FEATURES/PROBLEMS:
 
-* Too much C, too little ruby
+* Needs more pie.
 
 == SYNOPSIS:
 
@@ -37,7 +37,7 @@ Browsing services:
 
 == INSTALL:
 
-* FIX (sudo gem install, anything else)
+* sudo gem install dnssd
 
 == LICENSE:
 
