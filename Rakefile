@@ -5,6 +5,7 @@ require 'hoe'
 
 Hoe.plugin :minitest
 Hoe.plugin :email
+Hoe.plugin :git
 
 HOE = Hoe.spec 'dnssd' do
   self.rubyforge_name = 'dnssd'

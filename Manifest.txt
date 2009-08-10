@@ -10,11 +10,11 @@ ext/dnssd/errors.c
 ext/dnssd/extconf.rb
 ext/dnssd/flags.c
 ext/dnssd/service.c
-ext/dnssd/text_record.c
 lib/dnssd.rb
 lib/dnssd/flags.rb
 lib/dnssd/reply.rb
 lib/dnssd/service.rb
+lib/dnssd/text_record.rb
 sample/browse.rb
 sample/growl.rb
 sample/highlevel_api.rb
