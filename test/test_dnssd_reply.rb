@@ -15,6 +15,64 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
     assert_equal DNSSD::Flags::Default, reply.flags
   end
 
+  def test_connect_tcp
+    port = Socket.getservbyname 'blackjack'
+    @reply.set_fullname 'blackjack._http._tcp.local.'
+    @reply.instance_variable_set :@port, port
+    @reply.instance_variable_set :@target, 'localhost'
+
+    server = TCPServer.new 'localhost', port
+
+    socket = @reply.connect
+
+    assert_instance_of TCPSocket, socket
+    assert_equal port,        socket.peeraddr[1]
+    assert_equal 'localhost', socket.peeraddr[2]
+  ensure
+    socket.close
+    server.close
+  end
+
+  def test_connect_tcp_no_port_target
+    skip "sync calls suck"
+    return
+    port = Socket.getservbyname 'blackjack'
+    server = TCPServer.new nil, port
+    Thread.start do server.accept end
+
+    DNSSD.announce server, 'blackjack'
+
+    @reply.set_fullname 'blackjack._http._tcp.local.'
+
+    socket = @reply.connect
+
+    assert_instance_of TCPSocket, socket
+    assert_equal port,        socket.peeraddr[1]
+    assert_equal 'localhost', socket.peeraddr[2]
+  ensure
+    socket.close if socket
+    server.close if server
+  end
+
+  def test_connect_udp
+    port = Socket.getservbyname 'blackjack'
+    @reply.set_fullname 'blackjack._http._udp.local.'
+    @reply.instance_variable_set :@port, port
+    @reply.instance_variable_set :@target, 'localhost'
+
+    server = UDPSocket.new
+    server.bind 'localhost', port
+
+    socket = @reply.connect
+
+    assert_instance_of UDPSocket, socket
+    assert_equal port,        socket.peeraddr[1]
+    assert_equal 'localhost', socket.peeraddr[2]
+  ensure
+    socket.close
+    server.close
+  end
+
   def test_fullname
     @reply.set_fullname @fullname
 
@@ -36,6 +94,18 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
 
     expected = "#<DNSSD::Reply:0x#{@reply.object_id.to_s 16} \"drbrain@pincer-tip\" type: _presence._tcp domain: local interface: en2 flags: #{flags}>"
     assert_equal expected, @reply.inspect
+  end
+
+  def test_protocol
+    @reply.set_fullname @fullname
+
+    assert_equal 'tcp', @reply.protocol
+  end
+
+  def test_service_name
+    @reply.set_fullname @fullname
+
+    assert_equal 'http', @reply.service_name
   end
 
   def test_set_fullname
