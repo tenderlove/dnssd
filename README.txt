@@ -10,17 +10,15 @@ resolving, registration and domain enumeration.
 
 == FEATURES/PROBLEMS:
 
-* Too much C, too little ruby
+* Sometimes tests fail
 
 == SYNOPSIS:
 
 Registering a service:
 
-  registration = DNSSD.register 'my web service', '_http._tcp', nil, 80
+  http = TCPServer.new nil, 80
   
-  # ...
-  
-  registration.stop # unregister when we're done
+  DNSSD.announce http, 'my awesome HTTP server'
 
 Browsing services:
 

@@ -25,9 +25,12 @@ static ID dnssd_iv_target;
 static ID dnssd_iv_text_record;
 static ID dnssd_iv_thread;
 
-#define IsDNSSDService(obj) (rb_obj_is_kind_of(obj,cDNSSDService)==Qtrue)
+#define IsDNSSDService(obj) (rb_obj_is_kind_of(obj, cDNSSDService) == Qtrue)
 #define GetDNSSDService(obj, var) \
-  do { assert(IsDNSSDService(obj)); Data_Get_Struct(obj, DNSServiceRef, var); } while (0)
+  do {\
+    assert(IsDNSSDService(obj));\
+    Data_Get_Struct(obj, DNSServiceRef, var);\
+  } while (0)
 
 static DNSServiceFlags
 dnssd_to_flags(VALUE obj) {
@@ -157,8 +160,12 @@ reply_from_resolve(VALUE service, DNSServiceFlags flags, uint32_t
 
 static void
 dnssd_callback(VALUE service, VALUE reply) {
-  VALUE result = rb_funcall2(rb_ivar_get(service, dnssd_iv_block),
-      dnssd_id_call, 1, &reply);
+  VALUE block = rb_ivar_get(service, dnssd_iv_block);
+  VALUE result = Qnil;
+
+  if (!NIL_P(block))
+    result = rb_funcall2(block, dnssd_id_call, 1, &reply);
+
   rb_ivar_set(service, dnssd_iv_result, result);
 }
 
@@ -678,6 +685,7 @@ dnssd_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
 
 static VALUE
 sd_resolve(int argc, VALUE *argv, VALUE service) {
+  VALUE reply = Qnil;
   VALUE name, type, domain, tmp_flags, interface;
 
   const char *name_str, *type_str, *domain_str;
@@ -687,7 +695,17 @@ sd_resolve(int argc, VALUE *argv, VALUE service) {
   DNSServiceErrorType err;
   DNSServiceRef *client;
 
-  rb_scan_args(argc, argv, "32", &name, &type, &domain, &tmp_flags, &interface);
+  if (argc == 1 &&
+      RTEST(rb_funcall(cDNSSDReply, rb_intern("==="), 1, argv[0]))) {
+    reply = argv[0];
+    name      = rb_funcall(reply, rb_intern("name"),      0);
+    type      = rb_funcall(reply, rb_intern("type"),      0);
+    domain    = rb_funcall(reply, rb_intern("domain"),    0);
+    tmp_flags = rb_funcall(reply, rb_intern("flags"),     0);
+    interface = rb_funcall(reply, rb_intern("interface"), 0);
+  } else {
+    rb_scan_args(argc, argv, "32", &name, &type, &domain, &tmp_flags, &interface);
+  }
 
   /* required parameters */
   name_str = StringValueCStr(name);
@@ -710,7 +728,8 @@ sd_resolve(int argc, VALUE *argv, VALUE service) {
 
 /*
  * call-seq:
- *    DNSSD.resolve!(name, type, domain, flags=0, interface=DNSSD::InterfaceAny) {|reply| block } => service
+ *    DNSSD.resolve!(browse_reply) { |reply| } => service
+ *    DNSSD.resolve!(name, type, domain, flags=0, interface=DNSSD::InterfaceAny) { |reply| } => service
  *
  * Synchronously resolve a service discovered via DNSSD.browse().
  *
@@ -733,7 +752,8 @@ dnssd_resolve_bang(int argc, VALUE * argv, VALUE self) {
 
 /*
  * call-seq:
- *    DNSSD.resolve(name, type, domain, flags=0, interface=DNSSD::InterfaceAny) {|reply| } => service
+ *    DNSSD.resolve(browse_reply) { |reply| } => service
+ *    DNSSD.resolve(name, type, domain, flags=0, interface=DNSSD::InterfaceAny) { |reply| } => service
  *
  * Asynchronously resolve a service discovered via DNSSD.browse().
  *
