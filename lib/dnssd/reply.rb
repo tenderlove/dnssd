@@ -69,6 +69,7 @@ class DNSSD::Reply
 
       DNSSD.resolve! self do |reply|
         value = reply
+        reply.service.stop
         break
       end
 
@@ -94,14 +95,14 @@ class DNSSD::Reply
           socket = UDPSocket.new
           socket.connect address[3], port rescue next
         end
+
+        return socket
       rescue
         next
       end
     end
 
     raise DNSSD::Error, "unable to connect to #{target}:#{port}" unless socket
-
-    socket
   end
 
   ##
