@@ -16,11 +16,14 @@ lib/dnssd/reply.rb
 lib/dnssd/service.rb
 lib/dnssd/text_record.rb
 sample/browse.rb
+sample/connect.rb
 sample/growl.rb
 sample/highlevel_api.rb
 sample/register.rb
 sample/resolve.rb
 sample/resolve_ichat.rb
+sample/server.rb
+test/test_dnssd.rb
 test/test_dnssd_flags.rb
 test/test_dnssd_reply.rb
 test/test_dnssd_text_record.rb
