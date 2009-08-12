@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# :nodoc: all
+# :stopdoc:
 #
 # Extension configuration script for DNS_SD C Extension.
 
@@ -54,4 +54,6 @@ s2 = check_sizeof("DNSServiceFlags", "dns_sd.h") or
 s1 >= s2 or abort("sizeof(void*) < sizeof(DNSServiceFlags) please contact the authors!")
 
 create_makefile "dnssd"
+
+# :startdoc:
 

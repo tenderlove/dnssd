@@ -4,6 +4,15 @@ void Init_DNSSD_Errors(void);
 void Init_DNSSD_Flags(void);
 void Init_DNSSD_Service(void);
 
+/*
+ * call-seq:
+ *   DNSSD.getservbyport(port, proto = nil) => service_name
+ * 
+ * Wrapper for getservbyport(3) - returns the service name for +port+.
+ *
+ *   DNSSD.getservbyport 1025 # => 'blackjack'
+ */
+
 static VALUE
 dnssd_getservbyport(int argc, VALUE * argv, VALUE self) {
   VALUE _port, _proto;
@@ -26,10 +35,28 @@ dnssd_getservbyport(int argc, VALUE * argv, VALUE self) {
   return rb_str_new2(result->s_name);
 }
 
+/*
+ * call-seq:
+ *   DNSSD.interface_name(interface_index) # => interface_name
+ *
+ * Returns the interface name for interface +interface_index+.
+ *
+ *   DNSSD.interface_name 1 # => 'lo0'
+ */
+
 static VALUE
 dnssd_if_nametoindex(VALUE self, VALUE name) {
   return UINT2NUM(if_nametoindex(StringValueCStr(name)));
 }
+
+/*
+ * call-seq:
+ *   DNSSD.interface_index(interface_name) # => interface_index
+ *
+ * Returns the interface index for interface +interface_name+.
+ *
+ *   DNSSD.interface_index 'lo0' # => 1
+ */
 
 static VALUE
 dnssd_if_indextoname(VALUE self, VALUE index) {

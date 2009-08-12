@@ -1,13 +1,34 @@
+=== 1.2.0 / 2009-08-11
+
+* 2 major enhancements
+  * DNSSD::announce which registers a server socket you've created
+  * DNSSD::Reply.connect which connects to a browsed service
+
+* 3 minor enhancements
+  * DNSSD::resolve now optionally accepts a DNSSD::Reply from DNSSD::browse
+  * Use rb_thread_wait_fd instead of custom rb_thread_select code
+  * DNSSD::Reply#protocol and DNSSD::Reply#service_name
+  * Added missing error classes from OS X 10.5's dns_sd.h
+  * Improved Documentation
+
+* 5 bug fixes
+  * Don't invoke block on callback if none was provided
+  * Remove ext/dnssd/dns_sd.h so matching header is used
+  * DNSSD::NoMemoryError is now raised instead of NoMemError
+  * ext/dnssd/errors.c now uses C constants
+  * DNSSD::ReferenceUsedError is now correctly named DNSSD::RefusedError
+  * Use C constants in ext/dnssd/errors.c
+
 === 1.1.0 / 2009-08-10
 
-* 2 Major enhancements
+* 2 major enhancements
   * Packaging files that need to be here
   * Increased the version number
 
-* 1 Minor enhancement
+* 1 minor enhancement
   * Less C codes
 
-* 1 Bugfix
+* 1 bug fix
   * Increased INTERNET!
 
 === 0.7.2 / 2009-08-05

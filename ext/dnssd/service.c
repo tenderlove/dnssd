@@ -190,7 +190,7 @@ dnssd_get_interface_index(VALUE interface) {
 
 /*
  * call-seq:
- *    DNSSD::Service.new() => raises a RuntimeError
+ *    DNSSD::Service.new => raises a RuntimeError
  *
  * Services can only be instantiated using ::enumerate_domains, ::browse,
  * ::register, and ::resolve.
@@ -381,15 +381,16 @@ sd_enumerate_domains(int argc, VALUE *argv, VALUE service) {
  * For each domain found a DNSSD::Reply object is passed to block with #domain
  * set to the enumerated domain.
  *
- *    available_domains = []
- *    timeout(2) do
- *      DNSSD.enumerate_domains! do |r|
- *        available_domains << r.domain
- *      end
- *    rescue TimeoutError
- *    end
- *    puts available_domains.inspect
- *
+ *   available_domains = []
+ *   
+ *   timeout(2) do
+ *     DNSSD.enumerate_domains! do |r|
+ *       available_domains << r.domain
+ *     end
+ *   rescue TimeoutError
+ *   end
+ *   
+ *   puts available_domains.inspect
  */
 
 static VALUE
@@ -400,12 +401,12 @@ dnssd_enumerate_domains_bang(int argc, VALUE * argv, VALUE self) {
 
 /*
  * call-seq:
- *    DNSSD.enumerate_domains(flags, interface) {|reply| } => serivce
+ *    DNSSD.enumerate_domains(flags, interface) { |reply| } => serivce
  *
  * Asynchronously enumerate domains available for browsing and registration.
  * For each domain found a DNSSD::DomainEnumReply object is passed to block.
- * The returned _service_handle_ can be used to control when to stop
- * enumerating domains (see DNSSD::Service#stop).
+ * The returned +service+ can be used to control when to stop enumerating
+ * domains (see DNSSD::Service#stop).
  *
  *   domains = []
  *   
@@ -471,7 +472,7 @@ sd_browse(int argc, VALUE *argv, VALUE service) {
 
 /*
  * call-seq:
- *    DNSSD.browse!(type, domain, flags, interface) {|reply| } => service
+ *    DNSSD.browse!(type, domain, flags, interface) { |reply| } => service
  *
  * Synchronously browse for services.
  *
@@ -500,7 +501,7 @@ dnssd_browse_bang(int argc, VALUE * argv, VALUE self) {
 
 /*
  * call-seq:
- *    DNSSD.browse(type, domain, flags, interface) {|reply| } => service
+ *    DNSSD.browse(type, domain, flags, interface) { |reply| } => service
  *
  * Asynchronously browse for services.
  *
@@ -598,10 +599,13 @@ sd_register(int argc, VALUE *argv, VALUE service) {
 
 /*
  * call-seq:
- *    DNSSD.register!(name, type, domain, port, text_record=nil, flags=0, interface=DNSSD::InterfaceAny) {|reply| block } => obj
+ *   DNSSD.register!(name, type, domain, port, text_record, flags, interface) { |reply| } => obj
  *
  * Synchronously register a service.  A DNSSD::Reply object is passed to the
  * optional block when the registration completes.
+ *
+ * +text_record+ defaults to nil, +flags+ defaults to 0 and +interface+
+ * defaults to DNSSD::InterfaceAny.
  *
  *   DNSSD.register! "My Files", "_http._tcp", nil, 8080 do |r|
  *     puts "successfully registered: #{r.inspect}"
@@ -621,10 +625,13 @@ dnssd_register_bang(int argc, VALUE * argv, VALUE self) {
 
 /*
  * call-seq:
- *    DNSSD.register(name, type, domain, port, text_record=nil, flags=0, interface=DNSSD::InterfaceAny) { |reply| } => service
+ *   DNSSD.register(name, type, domain, port, text_record, flags, interface) { |reply| } => obj
  *
  * Asynchronously register a service.  A DNSSD::Reply object is passed to the
  * optional block when the registration completes.
+ *
+ * +text_record+ defaults to nil, +flags+ defaults to 0 and +interface+
+ * defaults to DNSSD::InterfaceAny.
  *
  * The returned service can be used to control when to stop the service.
  *
@@ -705,20 +712,23 @@ sd_resolve(int argc, VALUE *argv, VALUE service) {
 
   GetDNSSDService(service, client);
   err = DNSServiceResolve(client, flags, interface_index, name_str, type_str,
-      domain_str, dnssd_resolve_reply, (void *)service);
+      domain_str, (DNSServiceResolveReply)dnssd_resolve_reply,
+      (void *)service);
   dnssd_check_error_code(err);
   return service;
 }
 
 /*
  * call-seq:
- *    DNSSD.resolve!(browse_reply) { |reply| } => service
- *    DNSSD.resolve!(name, type, domain, flags=0, interface=DNSSD::InterfaceAny) { |reply| } => service
+ *   DNSSD.resolve!(browse_reply) { |reply| } => service
+ *   DNSSD.resolve!(name, type, domain, flags, interface) { |reply| } => service
  *
- * Synchronously resolve a service discovered via DNSSD.browse().
+ * Synchronously resolve a service discovered via DNSSD::browse.
  *
- * The service is resolved to a target host name, port number, and text record
- * - all contained in the DNSSD::Reply object passed to the required block.
+ * +flags+ defaults to 0, +interface+ defaults to DNSSD::InterfaceAny.
+ *
+ * The service is resolved to a target host name, port number, and text record,
+ * all contained in the DNSSD::Reply object passed to the required block.
  *
  *   timeout 2 do
  *     DNSSD.resolve! "foo bar", "_http._tcp", "local" do |r|
@@ -736,13 +746,15 @@ dnssd_resolve_bang(int argc, VALUE * argv, VALUE self) {
 
 /*
  * call-seq:
- *    DNSSD.resolve(browse_reply) { |reply| } => service
- *    DNSSD.resolve(name, type, domain, flags=0, interface=DNSSD::InterfaceAny) { |reply| } => service
+ *   DNSSD.resolve(browse_reply) { |reply| } => service
+ *   DNSSD.resolve(name, type, domain, flags, interface) { |reply| } => service
  *
  * Asynchronously resolve a service discovered via DNSSD.browse().
  *
- * The service is resolved to a target host name, port number, and text record
- * - all contained in the DNSSD::Reply object passed to the required block.
+ * +flags+ defaults to 0, +interface+ defaults to DNSSD::InterfaceAny.
+ *
+ * The service is resolved to a target host name, port number, and text record,
+ * all contained in the DNSSD::Reply object passed to the required block.
  *
  * The returned service can be used to control when to stop resolving the
  * service (see DNSSD::Service#stop).

@@ -10,9 +10,12 @@ resolving, registration and domain enumeration.
 
 == FEATURES/PROBLEMS:
 
+* Not all of the DNSSD API is implemented
 * Sometimes tests fail
 
 == SYNOPSIS:
+
+See the sample directory (Hint: gem contents --prefix dnssd)
 
 Registering a service:
 
@@ -30,12 +33,12 @@ Browsing services:
 
 == REQUIREMENTS:
 
-* The mdns library on OS X
-* The dns-sd library on other operating systems
+* OS X
+* The dns-sd library on other operating systems (or dns-sd shim)
 
 == INSTALL:
 
-* FIX (sudo gem install, anything else)
+  sudo gem install dnssd
 
 == LICENSE:
 

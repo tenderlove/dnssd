@@ -29,7 +29,7 @@ class DNSSD::Reply
   attr_reader :port
 
   ##
-  # The DNSSD::Service service associated with the reply
+  # The DNSSD::Service associated with the reply
 
   attr_reader :service
 
@@ -48,12 +48,20 @@ class DNSSD::Reply
 
   attr_reader :type
 
+  ##
+  # Creates a DNSSD::Reply from +service+ and +flags+
+
   def self.from_service(service, flags)
     reply = new
     reply.instance_variable_set :@service, service
     reply.instance_variable_set :@flags, DNSSD::Flags.new(flags)
     reply
   end
+
+  ##
+  # Connects to this Reply.  If +target+ and +port+ are missing, DNSSD.resolve
+  # is automatically called.  +family+ can be used to select a particular
+  # address family.
 
   def connect(family = Socket::AF_UNSPEC)
     unless target and port then
@@ -103,7 +111,7 @@ class DNSSD::Reply
     DNSSD::Service.fullname @name.gsub("\032", ' '), @type, @domain
   end
 
-  def inspect
+  def inspect # :nodoc:
     "#<%s:0x%x %p type: %s domain: %s interface: %s flags: %s>" % [
       self.class, object_id, @name, @type, @domain, @interface, @flags
     ]
@@ -123,6 +131,9 @@ class DNSSD::Reply
     type.split('.').first.sub '_', ''
   end
 
+  ##
+  # Sets #name, #type and #domain from +fullname+
+
   def set_fullname(fullname)
     fullname = fullname.gsub(/\\([0-9]+)/) do $1.to_i.chr end
     fullname = fullname.scan(/(?:[^\\.]|\\\.)+/).map do |part|
@@ -133,6 +144,9 @@ class DNSSD::Reply
     @type   = fullname[1,   2].join '.'
     @domain = fullname.last + '.'
   end
+
+  ##
+  # Sets #name, #type and #domain
 
   def set_names(name, type, domain)
     set_fullname [name, type, domain].join('.')
