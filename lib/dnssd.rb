@@ -23,7 +23,7 @@ module DNSSD
   # Only for bound TCP and UDP sockets.
 
   def self.announce(socket, name, service = nil, text_record = nil, flags = 0,
-                    interface = DNSSD::InterfaceAny)
+                    interface = DNSSD::InterfaceAny, &block)
     _, port, _, address = socket.addr
 
     raise ArgumentError, 'socket not bound' if port == 0
@@ -40,7 +40,8 @@ module DNSSD
 
     type = "_#{service}._#{proto}"
 
-    registrar = register name, type, nil, port, text_record, flags, interface
+    registrar = register(name, type, nil, port, text_record, flags, interface,
+                         &block)
 
     socket.instance_variable_set :@registrar, registrar
 

@@ -293,10 +293,8 @@ dnssd_service_stop2(VALUE service) {
 
 static VALUE
 dnssd_service_process(VALUE service) {
-  int dns_sd_fd, nfds, result;
-  fd_set readfds;
-
   DNSServiceRef *client;
+
   GetDNSSDService(service, client);
 
   if (client == NULL) {
@@ -304,24 +302,10 @@ dnssd_service_process(VALUE service) {
     return Qnil;
   }
 
-  dns_sd_fd = DNSServiceRefSockFD(*client);
-  nfds = dns_sd_fd + 1;
-  for ( ;; ) {
-    FD_ZERO(&readfds);
-    FD_SET(dns_sd_fd, &readfds);
-    result = rb_thread_select(nfds, &readfds,
-        (fd_set *) NULL,
-        (fd_set *) NULL,
-        (struct timeval *) NULL);
-    if (result > 0) {
-      if (FD_ISSET(dns_sd_fd, &readfds)) {
-        DNSServiceErrorType e = DNSServiceProcessResult(*client);
-        dnssd_check_error_code(e);
-      }
-    } else {
-      break;
-    }
-  }
+  rb_thread_wait_fd(DNSServiceRefSockFD(*client));
+
+  DNSServiceErrorType e = DNSServiceProcessResult(*client);
+  dnssd_check_error_code(e);
 
   /* return the result from the processing */
   return rb_ivar_get(service, dnssd_iv_result);
@@ -600,9 +584,9 @@ sd_register(int argc, VALUE *argv, VALUE service) {
   GetDNSSDService(service, client);
 
   /* HACK */
-  rb_iv_set(service, "@interface", interface);
-  rb_iv_set(service, "@port", port);
-  rb_iv_set(service, "@text_record", text_record);
+  rb_ivar_set(service, dnssd_iv_interface, interface);
+  rb_ivar_set(service, dnssd_iv_port, port);
+  rb_ivar_set(service, dnssd_iv_text_record, text_record);
   /********/
 
   e = DNSServiceRegister(client, flags, interface_index, name_str, type_str,

@@ -35,7 +35,7 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
 
   def test_connect_tcp_no_port_target
     skip "sync calls suck"
-    return
+
     port = Socket.getservbyname 'blackjack'
     server = TCPServer.new nil, port
     Thread.start do server.accept end
