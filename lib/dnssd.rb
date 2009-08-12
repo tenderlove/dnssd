@@ -16,7 +16,7 @@ module DNSSD
   ##
   # The version of DNSSD you're using.
 
-  VERSION = '1.1.0'
+  VERSION = '1.2'
 
   ##
   # Registers +socket+ with DNSSD as +name+.  If +service+ is omitted it is
