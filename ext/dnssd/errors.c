@@ -4,27 +4,26 @@
 VALUE eDNSSDError;
 static VALUE eDNSSDUnknownError;
 
-#define DNSSD_ERROR_START (-65556)
-#define DNSSD_ERROR_END   (-65536)
+#define DNSSD_ERROR_START (DNSServiceErrorType)(-65792) /* 0xFFFE FF00 */
+#define DNSSD_ERROR_END   (DNSServiceErrorType)(-65537) /* 0xFFFE FFFF */
 
 static VALUE dnssd_errors[DNSSD_ERROR_END - DNSSD_ERROR_START];
 
 static void
-dnssd_errors_store(VALUE error, int num) {
-  assert(DNSSD_ERROR_START <= num && num < DNSSD_ERROR_END);
-  dnssd_errors[num - DNSSD_ERROR_START] = error;
+dnssd_errors_store(VALUE error, DNSServiceErrorType err) {
+  assert(DNSSD_ERROR_START <= err && err <= DNSSD_ERROR_END);
+  dnssd_errors[err - DNSSD_ERROR_START] = error;
 }
 
 void
-dnssd_check_error_code(DNSServiceErrorType e) {
-  int num = (int)e;
-  if (num) {
-    if(DNSSD_ERROR_START <= num && num < DNSSD_ERROR_END) {
-      rb_raise(dnssd_errors[num - DNSSD_ERROR_START],
-          "DNSSD operation failed with error code: %d", num);
+dnssd_check_error_code(DNSServiceErrorType err) {
+  if (err) {
+    if(DNSSD_ERROR_START <= err && err < DNSSD_ERROR_END) {
+      rb_raise(dnssd_errors[err - DNSSD_ERROR_START],
+          "DNSSD operation failed with error code: %d", err);
     } else {
       rb_raise(eDNSSDUnknownError,
-          "DNSSD operation failed with unrecognized error code: %d", num);
+          "DNSSD operation failed with unrecognized error code: %d", err);
     }
   }
 }
