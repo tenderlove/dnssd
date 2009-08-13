@@ -65,89 +65,108 @@ module DNSSD
     registrar
   end
 
+  ##
+  # Asynchronous version of DNSSD::Service#browse
+
   def self.browse(type, domain = nil, flags = 0,
                   interface = DNSSD::InterfaceAny, &block)
     service = DNSSD::Service.new
 
     Thread.start do
-      service.browse(type, domain, flags, interface, &block)
+      run(service, :browse, type, domain, flags, interface, &block)
     end
 
     service
   end
 
+  ##
+  # Synchronous version of DNSSD::Service#browse
+
   def self.browse!(type, domain = nil, flags = 0,
                   interface = DNSSD::InterfaceAny, &block)
     service = DNSSD::Service.new
 
-    service.browse(type, domain, flags, interface, &block)
-
-    service
-  ensure
-    service.stop unless service.stopped?
+    run(service, :browse, type, domain, flags, interface, &block)
   end
+
+  ##
+  # Asynchronous version of DNSSD::Service#enumerate_domains
 
   def self.enumerate_domains(flags = DNSSD::Flags::BrowseDomains,
                              interface = DNSSD::InterfaceAny, &block)
     service = DNSSD::Service.new
 
     Thread.start do
-      service.enumerate_domains(flags, interface, &block)
+      run(service, :enumerate_domains, flags, interface, &block)
     end
 
     service
   end
 
+  ##
+  # Synchronous version of DNSSD::Service#enumerate_domains
+
   def self.enumerate_domains!(flags = DNSSD::Flags::BrowseDomains,
                               interface = DNSSD::InterfaceAny, &block)
     service = DNSSD::Service.new
 
-    service.enumerate_domains(flags, interface, &block)
-
-    service
-  ensure
-    service.stop unless service.stopped?
+    run(service, :enumerate_domains, flags, interface, &block)
   end
+
+  ##
+  # Asynchronous version of DNSSD::Service#register
 
   def self.register(name, type, domain, port, text_record = nil, flags = 0,
                     interface = DNSSD::InterfaceAny, &block)
     service = DNSSD::Service.new
 
     Thread.start do
-      service.register(name, type, domain, port, nil, text_record, flags,
-                       interface, &block)
+      run(service, :register, name, type, domain, port, nil, text_record,
+          flags, interface, &block)
     end
 
     service
   end
+
+  ##
+  # Synchronous version of DNSSD::Service#register
 
   def self.register!(name, type, domain, port, text_record = nil, flags = 0,
                      interface = DNSSD::InterfaceAny, &block)
     service = DNSSD::Service.new
 
-    block = proc { } unless block
-    service.register(name, type, domain, port, nil, text_record, flags,
-                     interface, &block)
-
-    service
-  ensure
-    service.stop unless service.stopped?
+    run(service, :register, name, type, domain, port, nil, text_record, flags,
+        interface, &block)
   end
+
+  ##
+  # Asynchronous version of DNSSD::Service#resolve
 
   def self.resolve(*args, &block)
     service = DNSSD::Service.new
 
     Thread.start do
-      service.resolve(*args, &block)
+      run(service, :resolve, *args, &block)
     end
 
     service
   end
 
+  ##
+  # Synchronous version of DNSSD::Service#resolve
+
   def self.resolve!(*args, &block)
     service = DNSSD::Service.new
 
-    service.resolve(*args, &block)
+    run(service, :resolve, *args, &block)
+  end
+
+  ##
+  # Dispatches +args+ and +block+ to +method+ on +service+ and ensures
+  # +service+ is shut down after use.
+
+  def self.run(service, method, *args, &block)
+    service.send(method, *args, &block)
 
     service
   ensure

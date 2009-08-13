@@ -8,6 +8,9 @@ DNSSD.announce blackjack, 'blackjack server'
 trap 'INT'  do exit; end
 trap 'TERM' do exit; end
 
+puts "Running 'blackjack server' on port %d" % blackjack.addr[1]
+puts 'Now run sample/socket.rb'
+
 loop do
   socket = blackjack.accept
   peeraddr = socket.peeraddr
