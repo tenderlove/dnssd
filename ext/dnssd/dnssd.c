@@ -74,11 +74,17 @@ void
 Init_dnssd(void) {
   VALUE mDNSSD = rb_define_module("DNSSD");
 
-  /* Specifies all interfaces. */
-  rb_define_const(mDNSSD, "InterfaceAny", ULONG2NUM(kDNSServiceInterfaceIndexAny));
+  /* All interfaces */
+  rb_define_const(mDNSSD, "InterfaceAny",
+      ULONG2NUM(kDNSServiceInterfaceIndexAny));
 
-  /* Specifies local interfaces only. */
-  rb_define_const(mDNSSD, "InterfaceLocalOnly", ULONG2NUM(kDNSServiceInterfaceIndexLocalOnly));
+  /* Local interfaces, for services running only on the same machine */
+  rb_define_const(mDNSSD, "InterfaceLocalOnly",
+      ULONG2NUM(kDNSServiceInterfaceIndexLocalOnly));
+
+  /* Unicast interfaces */
+  rb_define_const(mDNSSD, "InterfaceUnicast",
+      ULONG2NUM(kDNSServiceInterfaceIndexUnicast));
 
   rb_define_singleton_method(mDNSSD, "getservbyport", dnssd_getservbyport, -1);
 

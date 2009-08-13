@@ -69,7 +69,6 @@ class DNSSD::Reply
 
       DNSSD.resolve! self do |reply|
         value = reply
-        reply.service.stop
         break
       end
 

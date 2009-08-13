@@ -20,8 +20,7 @@ class TestDNSSD < MiniTest::Unit::TestCase
     DNSSD.browse '_blackjack._tcp' do |reply|
       next unless 'blackjack tcp server' == reply.name
       t[:reply] = reply
-      reply.service.stop
-      t.wakeup
+      break
     end
 
     s = TCPServer.new 'localhost', @port
@@ -41,8 +40,7 @@ class TestDNSSD < MiniTest::Unit::TestCase
     resolver = DNSSD.resolve 'blackjack resolve', '_blackjack._tcp',
                              'local.' do |reply|
       t[:reply] = reply
-      reply.service.stop
-      t.wakeup
+      break
     end
 
     s = TCPServer.new 'localhost', @port + 1

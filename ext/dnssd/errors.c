@@ -28,14 +28,6 @@ dnssd_check_error_code(DNSServiceErrorType err) {
   }
 }
 
-void
-dnssd_instantiation_error(const char *what) {
-  rb_raise(rb_eRuntimeError,
-      "cannot instantiate %s, use DNSSD "
-      "enumerate_domains(), browse(), resolve() or register() instead",
-      what);
-}
-
 /* Document-class: DNSSD::Error
  *
  * Base class of all DNS Service Discovery related errors.

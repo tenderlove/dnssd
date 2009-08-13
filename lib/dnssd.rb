@@ -35,8 +35,6 @@ module DNSSD
 
     raise ArgumentError, 'socket not bound' if port == 0
 
-    interface = DNSSD.interface_index interface unless Numeric === interface
-
     service ||= DNSSD.getservbyport port
 
     proto = case socket
@@ -65,6 +63,95 @@ module DNSSD
     end
 
     registrar
+  end
+
+  def self.browse(type, domain = nil, flags = 0,
+                  interface = DNSSD::InterfaceAny, &block)
+    service = DNSSD::Service.new
+
+    Thread.start do
+      service.browse(type, domain, flags, interface, &block)
+    end
+
+    service
+  end
+
+  def self.browse!(type, domain = nil, flags = 0,
+                  interface = DNSSD::InterfaceAny, &block)
+    service = DNSSD::Service.new
+
+    service.browse(type, domain, flags, interface, &block)
+
+    service
+  ensure
+    service.stop unless service.stopped?
+  end
+
+  def self.enumerate_domains(flags = DNSSD::Flags::BrowseDomains,
+                             interface = DNSSD::InterfaceAny, &block)
+    service = DNSSD::Service.new
+
+    Thread.start do
+      service.enumerate_domains(flags, interface, &block)
+    end
+
+    service
+  end
+
+  def self.enumerate_domains!(flags = DNSSD::Flags::BrowseDomains,
+                              interface = DNSSD::InterfaceAny, &block)
+    service = DNSSD::Service.new
+
+    service.enumerate_domains(flags, interface, &block)
+
+    service
+  ensure
+    service.stop unless service.stopped?
+  end
+
+  def self.register(name, type, domain, port, text_record = nil, flags = 0,
+                    interface = DNSSD::InterfaceAny, &block)
+    service = DNSSD::Service.new
+
+    Thread.start do
+      service.register(name, type, domain, port, nil, text_record, flags,
+                       interface, &block)
+    end
+
+    service
+  end
+
+  def self.register!(name, type, domain, port, text_record = nil, flags = 0,
+                     interface = DNSSD::InterfaceAny, &block)
+    service = DNSSD::Service.new
+
+    block = proc { } unless block
+    service.register(name, type, domain, port, nil, text_record, flags,
+                     interface, &block)
+
+    service
+  ensure
+    service.stop unless service.stopped?
+  end
+
+  def self.resolve(*args, &block)
+    service = DNSSD::Service.new
+
+    Thread.start do
+      service.resolve(*args, &block)
+    end
+
+    service
+  end
+
+  def self.resolve!(*args, &block)
+    service = DNSSD::Service.new
+
+    service.resolve(*args, &block)
+
+    service
+  ensure
+    service.stop unless service.stopped?
   end
 
 end
