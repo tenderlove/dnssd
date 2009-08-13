@@ -34,21 +34,18 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
   end
 
   def test_connect_tcp_no_port_target
-    skip "sync calls suck"
-
     port = Socket.getservbyname 'blackjack'
     server = TCPServer.new nil, port
     Thread.start do server.accept end
 
-    DNSSD.announce server, 'blackjack'
+    DNSSD.announce server, 'blackjack no port'
 
-    @reply.set_fullname 'blackjack._http._tcp.local.'
+    @reply.set_fullname "blackjack\\032no\\032port._blackjack._tcp.local."
 
     socket = @reply.connect
 
     assert_instance_of TCPSocket, socket
     assert_equal port,        socket.peeraddr[1]
-    assert_equal 'localhost', socket.peeraddr[2]
   ensure
     socket.close if socket
     server.close if server
