@@ -1,6 +1,3 @@
-require 'dnssd/dnssd'
-require 'socket'
-
 ##
 # DNSSD is a wrapper for the DNS Service Discovery library.
 #
@@ -175,8 +172,15 @@ module DNSSD
 
 end
 
+require 'socket'
+
+require 'dnssd/addr_info'
+
+# The C extension uses above-defined classes
+require 'dnssd/dnssd'
+
 require 'dnssd/flags'
 require 'dnssd/reply'
-require 'dnssd/service'
 require 'dnssd/text_record'
+require 'dnssd/service'
 

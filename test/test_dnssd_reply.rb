@@ -20,8 +20,9 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
     @reply.set_fullname 'blackjack._http._tcp.local.'
     @reply.instance_variable_set :@port, port
     @reply.instance_variable_set :@target, 'localhost'
+    @reply.instance_variable_set :@interface, DNSSD::InterfaceAny
 
-    server = TCPServer.new 'localhost', port
+    server = TCPServer.new nil, port
 
     socket = @reply.connect
 
@@ -29,8 +30,8 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
     assert_equal port,        socket.peeraddr[1]
     assert_equal 'localhost', socket.peeraddr[2]
   ensure
-    socket.close
-    server.close
+    socket.close if socket
+    server.close if server
   end
 
   def test_connect_tcp_no_port_target
@@ -41,6 +42,7 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
     DNSSD.announce server, 'blackjack no port'
 
     @reply.set_fullname "blackjack\\032no\\032port._blackjack._tcp.local."
+    @reply.instance_variable_set :@interface, DNSSD::InterfaceAny
 
     socket = @reply.connect
 
@@ -56,6 +58,7 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
     @reply.set_fullname 'blackjack._http._udp.local.'
     @reply.instance_variable_set :@port, port
     @reply.instance_variable_set :@target, 'localhost'
+    @reply.instance_variable_set :@interface, DNSSD::InterfaceAny
 
     server = UDPSocket.new
     server.bind 'localhost', port
@@ -66,8 +69,8 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
     assert_equal port,        socket.peeraddr[1]
     assert_equal 'localhost', socket.peeraddr[2]
   ensure
-    socket.close
-    server.close
+    socket.close if socket
+    server.close if server
   end
 
   def test_fullname

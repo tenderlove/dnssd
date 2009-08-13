@@ -5,9 +5,13 @@
   #define DNSSD_API
 #endif
 
+static VALUE mDNSSD;
+static VALUE cDNSSDAddrInfo;
+static VALUE cDNSSDFlags;
 static VALUE cDNSSDReply;
 static VALUE cDNSSDService;
 static VALUE cDNSSDTextRecord;
+static VALUE rb_cSocket;
 
 static ID dnssd_id_join;
 static ID dnssd_id_push;
@@ -351,6 +355,64 @@ dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
 }
 
 static void DNSSD_API
+dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
+    uint32_t interface, DNSServiceErrorType e, const char *host,
+    const struct sockaddr *address, uint32_t ttl, void *context) {
+  VALUE service, reply, argv[5];
+
+  dnssd_check_error_code(e);
+
+  service = (VALUE)context;
+
+  argv[0] = rb_str_new2(host);
+  argv[1] = rb_funcall(rb_cSocket, rb_intern("unpack_sockaddr_in"), 1,
+      rb_str_new((char *)address, SIN_LEN((struct sockaddr_in*)address)));
+  argv[2] = ULONG2NUM(ttl);
+  if (interface > 0) {
+    argv[3] = rb_funcall(mDNSSD, rb_intern("interface_name"), 1,
+        UINT2NUM(interface));
+  } else {
+    argv[3] = UINT2NUM(interface);
+  }
+  argv[4] = rb_funcall(cDNSSDFlags, rb_intern("new"), 1, UINT2NUM(flags));
+
+  reply = rb_class_new_instance(5, argv, cDNSSDAddrInfo);
+
+  dnssd_service_callback(service, reply);
+}
+
+static VALUE
+dnssd_service_getaddrinfo(VALUE self, VALUE _host, VALUE _protocol,
+    VALUE _flags, VALUE _interface) {
+  DNSServiceFlags flags = 0;
+  uint32_t interface = 0;
+  DNSServiceProtocol protocol = 0;
+  const char *host;
+
+  DNSServiceErrorType e;
+  DNSServiceRef *client;
+
+  host = StringValueCStr(_host);
+
+  protocol = (DNSServiceProtocol)NUM2ULONG(_protocol);
+
+  if (!NIL_P(_flags))
+    flags = (DNSServiceFlags)NUM2ULONG(_flags);
+
+  if (!NIL_P(_interface))
+    interface = NUM2ULONG(_interface);
+
+  GetDNSSDService(self, client);
+
+  e = DNSServiceGetAddrInfo(client, flags, interface, protocol, host,
+      dnssd_service_getaddrinfo_reply, (void *)self);
+
+  dnssd_check_error_code(e);
+
+  return self;
+}
+
+static void DNSSD_API
 dnssd_service_register_reply(DNSServiceRef client, DNSServiceFlags flags,
     DNSServiceErrorType e, const char *name, const char *type,
     const char *domain, void *context) {
@@ -477,10 +539,10 @@ dnssd_service_resolve(VALUE self, VALUE _name, VALUE _type, VALUE _domain,
 
 void
 Init_DNSSD_Service(void) {
-  VALUE mDNSSD = rb_define_module("DNSSD");
+  mDNSSD = rb_define_module("DNSSD");
 
-  dnssd_id_join        = rb_intern("join");
-  dnssd_id_push        = rb_intern("push");
+  dnssd_id_join = rb_intern("join");
+  dnssd_id_push = rb_intern("push");
 
   dnssd_iv_continue    = rb_intern("@continue");
   dnssd_iv_domain      = rb_intern("@domain");
@@ -491,9 +553,13 @@ Init_DNSSD_Service(void) {
   dnssd_iv_text_record = rb_intern("@text_record");
   dnssd_iv_thread      = rb_intern("@thread");
 
-  cDNSSDReply      = rb_define_class_under(mDNSSD, "Reply",      rb_cObject);
-  cDNSSDService    = rb_define_class_under(mDNSSD, "Service",    rb_cObject);
+  cDNSSDAddrInfo   = rb_path2class("DNSSD::AddrInfo");
+  cDNSSDFlags      = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
+  cDNSSDReply      = rb_define_class_under(mDNSSD, "Reply", rb_cObject);
+  cDNSSDService    = rb_define_class_under(mDNSSD, "Service", rb_cObject);
   cDNSSDTextRecord = rb_define_class_under(mDNSSD, "TextRecord", rb_cObject);
+  
+  rb_cSocket = rb_path2class("Socket");
 
   rb_define_const(cDNSSDService, "MAX_DOMAIN_NAME",
       ULONG2NUM(kDNSServiceMaxDomainName));
@@ -501,6 +567,12 @@ Init_DNSSD_Service(void) {
       ULONG2NUM(kDNSServiceMaxServiceName));
   rb_define_const(cDNSSDService, "DaemonVersion",
       rb_str_new2(kDNSServiceProperty_DaemonVersion));
+
+  rb_define_const(cDNSSDService, "IPv4", ULONG2NUM(kDNSServiceProtocol_IPv4));
+  rb_define_const(cDNSSDService, "IPv6", ULONG2NUM(kDNSServiceProtocol_IPv6));
+
+  rb_define_const(cDNSSDService, "UDP", ULONG2NUM(kDNSServiceProtocol_UDP));
+  rb_define_const(cDNSSDService, "TCP", ULONG2NUM(kDNSServiceProtocol_TCP));
 
   rb_define_alloc_func(cDNSSDService, dnssd_service_s_allocate);
   rb_define_singleton_method(cDNSSDService, "fullname", dnssd_service_s_fullname, 3);
@@ -514,6 +586,7 @@ Init_DNSSD_Service(void) {
 
   rb_define_method(cDNSSDService, "_browse", dnssd_service_browse, 4);
   rb_define_method(cDNSSDService, "_enumerate_domains", dnssd_service_enumerate_domains, 2);
+  rb_define_method(cDNSSDService, "_getaddrinfo", dnssd_service_getaddrinfo, 4);
   rb_define_method(cDNSSDService, "_register", dnssd_service_register, 8);
   rb_define_method(cDNSSDService, "_resolve", dnssd_service_resolve, 5);
 

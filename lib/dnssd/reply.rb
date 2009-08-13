@@ -59,11 +59,14 @@ class DNSSD::Reply
   end
 
   ##
-  # Connects to this Reply.  If +target+ and +port+ are missing, DNSSD.resolve
-  # is automatically called.  +family+ can be used to select a particular
-  # address family.
+  # Connects to this Reply.  If #target and #port are missing, DNSSD.resolve
+  # is automatically called.
+  #
+  # +family+ can be used to select a particular address family (IPv6 vs IPv4).
+  #
+  # +addrinfo_flags+ are passed to DNSSD::Service#getaddrinfo as flags.
 
-  def connect(family = Socket::AF_UNSPEC)
+  def connect(family = Socket::AF_UNSPEC, addrinfo_flags = 0)
     unless target and port then
       value = nil
 
@@ -72,36 +75,45 @@ class DNSSD::Reply
         break
       end
 
-      return value.connect
+      return value.connect(family, addrinfo_flags)
     end
 
-    socktype = case protocol
-               when 'tcp' then Socket::SOCK_STREAM
-               when 'udp' then Socket::SOCK_DGRAM
-               else raise ArgumentError, "invalid protocol #{protocol}"
-               end
+    addrinfo_protocol = case family
+                        when Socket::AF_INET then DNSSD::Service::IPv4
+                        when Socket::AF_INET6 then DNSSD::Service::IPv6
+                        when Socket::AF_UNSPEC then 0
+                        else raise ArgumentError, "invalid family #{family}"
+                        end
 
-    addresses = Socket.getaddrinfo target, port, family, socktype
+    addresses = []
 
-    socket = nil
+    service = DNSSD::Service.new
 
-    addresses.each do |address|
-      begin
-        case protocol
-        when 'tcp' then
-          socket = TCPSocket.new address[3], port
-        when 'udp' then
-          socket = UDPSocket.new
-          socket.connect address[3], port rescue next
+    begin
+      service.getaddrinfo target, addrinfo_protocol, addrinfo_flags,
+                          interface do |addrinfo|
+        address = addrinfo.address.last
+
+        begin
+          socket = nil
+
+          case protocol
+          when 'tcp' then
+            socket = TCPSocket.new address, port
+          when 'udp' then
+            socket = UDPSocket.new
+            socket.connect address, port rescue next
+          end
+
+          return socket
+        rescue
+          next if addrinfo.flags.more_coming?
+          raise
         end
-
-        return socket
-      rescue
-        next
       end
+    ensure
+      service.stop
     end
-
-    raise DNSSD::Error, "unable to connect to #{target}:#{port}" unless socket
   end
 
   ##

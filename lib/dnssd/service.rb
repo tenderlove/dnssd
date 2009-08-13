@@ -79,6 +79,17 @@ class DNSSD::Service
 
     process(&block)
   end
+
+  def getaddrinfo(host, protocol = 0, flags = 0,
+                  interface = DNSSD::InterfaceAny, &block)
+    interface = DNSSD.interface_index interface unless Integer === interface
+
+    raise DNSSD::Error, 'service in progress' if started?
+
+    _getaddrinfo host, protocol, flags.to_i, interface
+
+    process(&block)
+  end
   
   def inspect # :nodoc:
     stopped = stopped? ? 'stopped' : 'running'

@@ -53,6 +53,10 @@ s2 = check_sizeof("DNSServiceFlags", "dns_sd.h") or
 # need to make sure storing unsigned integer in void * is OK.
 s1 >= s2 or abort("sizeof(void*) < sizeof(DNSServiceFlags) please contact the authors!")
 
+if have_struct_member 'struct sockaddr_in', 'sin_len', 'netdb.h' then
+  $defs[-1] = '-DHAVE_SIN_LEN'
+end
+
 create_makefile "dnssd"
 
 # :startdoc:

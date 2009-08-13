@@ -27,6 +27,12 @@
 #include <netdb.h>
 #endif
 
+#ifdef HAVE_SIN_LEN
+# define SIN_LEN(si) (si)->sin_len
+#else
+# define SIN_LEN(si) sizeof(struct sockaddr_in)
+#endif
+
 extern VALUE eDNSSDError;
 
 void dnssd_check_error_code(DNSServiceErrorType e);

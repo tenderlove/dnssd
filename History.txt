@@ -1,10 +1,14 @@
 === 1.3 / 2009-08-??
 
-* N minor enhancements
+* N major enhancements
   * Added DNSSD::Service.get_property
+  * Added DNSSD::Service#getaddrinfo
+
+* N minor enhancements
+  * DNSSD::Reply#connect now uses DNSSD::Service#getaddrinfo (faster)
 
 * N bug fixes
-  * Fix hierarchical domains
+  * Fix hierarchical domains like <tt>\.mac\.name.members.mac.com.</tt>
 
 === 1.2 / 2009-08-11
 
