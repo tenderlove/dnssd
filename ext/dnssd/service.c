@@ -119,6 +119,27 @@ dnssd_service_s_fullname(VALUE klass, VALUE name, VALUE type, VALUE domain) {
       StringValueCStr(domain));
 }
 
+/*
+ * call-seq:
+ *   service.get_property(property) => result
+ *
+ * Binding for DNSServiceGetProperty.  The only property currently supported in
+ * DNSSD is DNSSD::Service::DaemonVersion
+ */
+static VALUE
+dnssd_service_s_get_property(VALUE klass, VALUE property) {
+  uint32_t result = 0;
+  uint32_t size = sizeof(result);
+  DNSServiceErrorType e;
+
+  e = DNSServiceGetProperty(StringValueCStr(property), (void *)&result, &size);
+
+  dnssd_check_error_code(e);
+
+  /* as of this writing only a uint32_t will be returned */
+  return ULONG2NUM(result);
+}
+
 static VALUE
 dnssd_service_s_allocate(VALUE klass) {
   DNSServiceRef *client = ALLOC(DNSServiceRef);
@@ -200,6 +221,15 @@ dnssd_service_stop(VALUE self) {
 
   return self;
 }
+
+/* Binding to DNSServiceProcessResult
+ *
+ * When run with a single thread _process will block.
+ *
+ * _process works intelligently with threads.  If a service is waiting on data
+ * from the daemon in a thread you can force _process to abort by setting
+ * @continue to false and running the thread.
+ */
 
 static VALUE
 dnssd_service_process(VALUE self) {
@@ -469,10 +499,13 @@ Init_DNSSD_Service(void) {
       ULONG2NUM(kDNSServiceMaxDomainName));
   rb_define_const(cDNSSDService, "MAX_SERVICE_NAME",
       ULONG2NUM(kDNSServiceMaxServiceName));
-
+  rb_define_const(cDNSSDService, "DaemonVersion",
+      rb_str_new2(kDNSServiceProperty_DaemonVersion));
 
   rb_define_alloc_func(cDNSSDService, dnssd_service_s_allocate);
   rb_define_singleton_method(cDNSSDService, "fullname", dnssd_service_s_fullname, 3);
+
+  rb_define_singleton_method(cDNSSDService, "get_property", dnssd_service_s_get_property, 1);
 
   rb_define_method(cDNSSDService, "started?", dnssd_service_started_p, 0);
 

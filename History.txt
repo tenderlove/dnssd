@@ -1,4 +1,9 @@
-=== 1.2.0 / 2009-08-11
+=== 1.3 / 2009-08-??
+
+* N minor enhancements
+  * Added DNSSD::Service.get_property
+
+=== 1.2 / 2009-08-11
 
 * 4 major enhancements
   * DNSSD::Service is now directly instantiable
