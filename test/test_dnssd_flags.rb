@@ -66,13 +66,18 @@ class TestDNSSDFlags < MiniTest::Unit::TestCase
     new_flags = ~@flags
 
     expected = DNSSD::Flags.new(DNSSD::Flags::Add,
+                                DNSSD::Flags::AllowRemoteQuery,
                                 DNSSD::Flags::BrowseDomains,
                                 DNSSD::Flags::Default,
+                                DNSSD::Flags::Force,
+                                DNSSD::Flags::ForceMulticast,
                                 DNSSD::Flags::LongLivedQuery,
                                 DNSSD::Flags::MoreComing,
                                 DNSSD::Flags::NoAutoRename,
                                 DNSSD::Flags::RegistrationDomains,
-                                DNSSD::Flags::Shared, DNSSD::Flags::Unique)
+                                DNSSD::Flags::ReturnIntermediates,
+                                DNSSD::Flags::Shared,
+                                DNSSD::Flags::Unique)
 
     assert_equal expected, new_flags
   end

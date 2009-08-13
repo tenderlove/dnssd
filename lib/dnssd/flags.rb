@@ -22,6 +22,9 @@ class DNSSD::Flags
     end
   end
 
+  ##
+  # Bitfield with all valid flags set
+
   ALL_FLAGS = FLAGS.values.inject { |flag, all| flag | all }
 
   ##
@@ -71,15 +74,24 @@ class DNSSD::Flags
     verify
   end
 
+  ##
+  # Returns an Array of flag names
+
   def to_a
     FLAGS.map do |name, value|
       (@flags & value == value) ? name : nil
     end.compact
   end
 
-  def to_i # :nodoc:
+  ##
+  # Flags as a bitfield
+
+  def to_i
     @flags
   end
+
+  ##
+  # Trims the flag list down to valid flags
 
   def verify
     @flags &= ALL_FLAGS

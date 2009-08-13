@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# :nodoc: all
+# :stopdoc:
 #
 # Extension configuration script for DNS_SD C Extension.
 
@@ -38,6 +38,7 @@ have_header "sys/param.h"
 have_header "sys/if.h"
 have_header "net/if.h"
 have_header "arpa/inet.h"
+have_header "netdb.h"
 
 abort "need function #{f}" unless have_macro("htons") || have_func("htons")
 abort "need function #{f}" unless have_macro("ntohs") || have_func("ntohs")
@@ -53,4 +54,6 @@ s2 = check_sizeof("DNSServiceFlags", "dns_sd.h") or
 s1 >= s2 or abort("sizeof(void*) < sizeof(DNSServiceFlags) please contact the authors!")
 
 create_makefile "dnssd"
+
+# :startdoc:
 

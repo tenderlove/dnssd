@@ -11,16 +11,18 @@ resolving, registration and domain enumeration.
 == FEATURES/PROBLEMS:
 
 * Needs more pie.
+* Not all of the DNSSD API is implemented
+* Sometimes tests fail
 
 == SYNOPSIS:
 
+See the sample directory (Hint: gem contents --prefix dnssd)
+
 Registering a service:
 
-  registration = DNSSD.register 'my web service', '_http._tcp', nil, 80
+  http = TCPServer.new nil, 80
   
-  # ...
-  
-  registration.stop # unregister when we're done
+  DNSSD.announce http, 'my awesome HTTP server'
 
 Browsing services:
 
@@ -32,12 +34,12 @@ Browsing services:
 
 == REQUIREMENTS:
 
-* The mdns library on OS X
-* The dns-sd library on other operating systems
+* OS X
+* The dns-sd library on other operating systems (or dns-sd shim)
 
 == INSTALL:
 
-* sudo gem install dnssd
+  sudo gem install dnssd
 
 == LICENSE:
 

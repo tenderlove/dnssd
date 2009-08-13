@@ -29,7 +29,7 @@ class DNSSD::Reply
   attr_reader :port
 
   ##
-  # The service associated with the reply, see DNSSD::Service
+  # The DNSSD::Service associated with the reply
 
   attr_reader :service
 
@@ -48,11 +48,61 @@ class DNSSD::Reply
 
   attr_reader :type
 
+  ##
+  # Creates a DNSSD::Reply from +service+ and +flags+
+
   def self.from_service(service, flags)
     reply = new
     reply.instance_variable_set :@service, service
     reply.instance_variable_set :@flags, DNSSD::Flags.new(flags)
     reply
+  end
+
+  ##
+  # Connects to this Reply.  If +target+ and +port+ are missing, DNSSD.resolve
+  # is automatically called.  +family+ can be used to select a particular
+  # address family.
+
+  def connect(family = Socket::AF_UNSPEC)
+    unless target and port then
+      value = nil
+
+      DNSSD.resolve! self do |reply|
+        value = reply
+        reply.service.stop
+        break
+      end
+
+      return value.connect
+    end
+
+    socktype = case protocol
+               when 'tcp' then Socket::SOCK_STREAM
+               when 'udp' then Socket::SOCK_DGRAM
+               else raise ArgumentError, "invalid protocol #{protocol}"
+               end
+
+    addresses = Socket.getaddrinfo target, port, family, socktype
+
+    socket = nil
+
+    addresses.each do |address|
+      begin
+        case protocol
+        when 'tcp' then
+          socket = TCPSocket.new address[3], port
+        when 'udp' then
+          socket = UDPSocket.new
+          socket.connect address[3], port rescue next
+        end
+
+        return socket
+      rescue
+        next
+      end
+    end
+
+    raise DNSSD::Error, "unable to connect to #{target}:#{port}" unless socket
   end
 
   ##
@@ -62,11 +112,28 @@ class DNSSD::Reply
     DNSSD::Service.fullname @name.gsub("\032", ' '), @type, @domain
   end
 
-  def inspect
+  def inspect # :nodoc:
     "#<%s:0x%x %p type: %s domain: %s interface: %s flags: %s>" % [
       self.class, object_id, @name, @type, @domain, @interface, @flags
     ]
   end
+
+  ##
+  # Protocol of this service
+
+  def protocol
+    type.split('.').last.sub '_', ''
+  end
+
+  ##
+  # Service name as in Socket.getservbyname
+
+  def service_name
+    type.split('.').first.sub '_', ''
+  end
+
+  ##
+  # Sets #name, #type and #domain from +fullname+
 
   def set_fullname(fullname)
     fullname = fullname.gsub(/\\([0-9]+)/) do $1.to_i.chr end
@@ -78,6 +145,9 @@ class DNSSD::Reply
     @type   = fullname[1,   2].join '.'
     @domain = fullname.last + '.'
   end
+
+  ##
+  # Sets #name, #type and #domain
 
   def set_names(name, type, domain)
     set_fullname [name, type, domain].join('.')
