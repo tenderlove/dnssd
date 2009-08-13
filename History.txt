@@ -1,12 +1,12 @@
 === 1.2.0 / 2009-08-11
 
-* 3 major enhancements
+* 4 major enhancements
   * DNSSD::Service is now directly instantiable
   * DNSSD.announce which registers a server socket you've created
   * DNSSD::Reply.connect which connects to a browsed service
   * Fix asynchronous service shutdown crash
 
-* 3 minor enhancements
+* 8 minor enhancements
   * DNSSD.resolve now optionally accepts a DNSSD::Reply from DNSSD.browse
   * Use rb_thread_wait_fd instead of custom rb_thread_select code
   * DNSSD::Reply#protocol and DNSSD::Reply#service_name
