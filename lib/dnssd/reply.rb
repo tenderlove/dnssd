@@ -142,7 +142,7 @@ class DNSSD::Reply
 
     @name   = fullname[0]
     @type   = fullname[1,   2].join '.'
-    @domain = fullname.last + '.'
+    @domain = fullname[3..-1].map { |part| part.sub '.', '\\.' }.join('.') + '.'
   end
 
   ##

@@ -3,6 +3,9 @@
 * N minor enhancements
   * Added DNSSD::Service.get_property
 
+* N bug fixes
+  * Fix hierarchical domains
+
 === 1.2 / 2009-08-11
 
 * 4 major enhancements
