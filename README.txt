@@ -10,6 +10,7 @@ resolving, registration and domain enumeration.
 
 == FEATURES/PROBLEMS:
 
+* Needs more pie.
 * Not all of the DNSSD API is implemented
 * Sometimes tests fail
 
