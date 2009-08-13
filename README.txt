@@ -16,7 +16,7 @@ resolving, registration and domain enumeration.
 
 == SYNOPSIS:
 
-See the sample directory (Hint: gem contents --prefix dnssd)
+See the sample directory (Hint: <tt>gem contents --prefix dnssd</tt>)
 
 Registering a service:
 
@@ -44,6 +44,7 @@ Browsing services:
 == LICENSE:
 
 Copyright (c) 2004 Chad Fowler, Charles Mills, Rich Kilmer
+
 Copyright (c) 2009 Phil Hagelberg, Aaron Patterson, Eric Hodel
 
 Licensed under the ruby license
