@@ -1,0 +1,3 @@
+class DNSSD::Record
+end
+

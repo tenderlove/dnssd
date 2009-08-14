@@ -2,13 +2,19 @@ require 'dnssd'
 
 Thread.abort_on_exception = true
 
-DNSSD.register "hey ruby", "_http._tcp", nil, 8081
+#DNSSD.register 'blockless', '_http._tcp', nil, 8081
+#DNSSD.register 'block', '_http._tcp', nil, 8081 do |r| end
 
-registrar = DNSSD.register "chad ruby", "_http._tcp", nil, 8080 do |reply|
-  p :registered => reply.fullname
-end
+registrar = DNSSD::Service.new
 
-sleep 1
+service = nil
+
+tr = DNSSD::TextRecord.new
+tr['foo'] = 'bar'
+registrar.register 'add_record', '_http._tcp', nil, 8080, nil, tr
+registrar.add_record DNSSD::Record::RP, 'nobody.local. .'
+
+sleep 2
 
 puts
 
@@ -25,7 +31,7 @@ browser = DNSSD.browse '_http._tcp' do |reply|
   end
 end
 
-sleep 0.1
+sleep #0.1
 
 browser.stop
 registrar.stop

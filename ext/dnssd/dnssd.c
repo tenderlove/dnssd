@@ -2,6 +2,7 @@
 
 void Init_DNSSD_Errors(void);
 void Init_DNSSD_Flags(void);
+void Init_DNSSD_Record(void);
 void Init_DNSSD_Service(void);
 
 /*
@@ -93,6 +94,7 @@ Init_dnssd(void) {
 
   Init_DNSSD_Errors();
   Init_DNSSD_Flags();
+  Init_DNSSD_Record();
   Init_DNSSD_Service();
 }
 

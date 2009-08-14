@@ -3,6 +3,7 @@
 static VALUE mDNSSD;
 static VALUE cDNSSDAddrInfo;
 static VALUE cDNSSDFlags;
+static VALUE cDNSSDRecord;
 static VALUE cDNSSDReply;
 static VALUE cDNSSDService;
 static VALUE cDNSSDTextRecord;
@@ -15,20 +16,22 @@ static ID dnssd_iv_continue;
 static ID dnssd_iv_domain;
 static ID dnssd_iv_interface;
 static ID dnssd_iv_port;
+static ID dnssd_iv_records;
 static ID dnssd_iv_replies;
+static ID dnssd_iv_service;
 static ID dnssd_iv_target;
 static ID dnssd_iv_text_record;
 static ID dnssd_iv_thread;
+static ID dnssd_iv_type;
 
-/* HACK why is this a macro */
-#define GetDNSSDService(obj, var) \
+#define get(klass, obj, type, var) \
   do {\
     Check_Type(obj, T_DATA);\
-    if (rb_obj_is_kind_of(obj, cDNSSDService) != Qtrue)\
+    if (rb_obj_is_kind_of(obj, klass) != Qtrue)\
       rb_raise(rb_eTypeError,\
-          "wrong argument type %s (expected DNSSD::Service)",\
+          "wrong argument type %s",\
           rb_class2name(CLASS_OF(obj)));\
-    Data_Get_Struct(obj, DNSServiceRef, var);\
+    Data_Get_Struct(obj, type, var);\
   } while (0)
 
 static void
@@ -218,6 +221,8 @@ dnssd_service_stop(VALUE self) {
 
   dnssd_service_free_client(client);
 
+  rb_ivar_set(self, dnssd_iv_type, Qnil);
+
   return self;
 }
 
@@ -234,7 +239,7 @@ static VALUE
 dnssd_service_process(VALUE self) {
   DNSServiceRef *client;
 
-  GetDNSSDService(self, client);
+  get(cDNSSDService, self, DNSServiceRef, client);
 
   if (client == NULL) {
     /* looks like this thread has already been stopped */
@@ -250,6 +255,43 @@ dnssd_service_process(VALUE self) {
   dnssd_check_error_code(e);
 
   return self;
+}
+
+static VALUE
+dnssd_service_add_record(VALUE self, VALUE _flags, VALUE _rrtype, VALUE _rdata,
+    VALUE _ttl) {
+  VALUE _record = Qnil;
+  DNSServiceRef *client;
+  DNSRecordRef *record;
+  DNSServiceFlags flags;
+  DNSServiceErrorType e;
+  uint16_t rrtype;
+  uint16_t rdlen;
+  const void *rdata;
+  uint32_t ttl;
+
+  _rdata = rb_str_to_str(_rdata);
+  flags = (DNSServiceFlags)NUM2ULONG(_flags);
+  rrtype = NUM2UINT(_rrtype);
+  rdlen = RSTRING_LEN(_rdata);
+  rdata = (void *)RSTRING_PTR(_rdata);
+  ttl = NUM2ULONG(_ttl);
+
+  get(cDNSSDService, self, DNSServiceRef, client);
+
+  _record = rb_class_new_instance(0, NULL, cDNSSDRecord);
+
+  get(cDNSSDRecord, _record, DNSRecordRef, record);
+
+  e = DNSServiceAddRecord(*client, record, flags, rrtype, rdlen, rdata, ttl);
+
+  dnssd_check_error_code(e);
+
+  /* record will become invalid when this service is destroyed */
+  rb_ivar_set(_record, dnssd_iv_service, self);
+  rb_ary_push(rb_ivar_get(self, dnssd_iv_records), _record);
+
+  return _record;
 }
 
 static void DNSSD_API
@@ -295,7 +337,7 @@ dnssd_service_browse(VALUE self, VALUE _type, VALUE _domain, VALUE _flags,
   if (!NIL_P(_interface))
     interface = NUM2ULONG(_interface);
 
-  GetDNSSDService(self, client);
+  get(cDNSSDService, self, DNSServiceRef, client);
 
   e = DNSServiceBrowse(client, flags, interface, type, domain,
       dnssd_service_browse_reply, (void *)self);
@@ -339,7 +381,7 @@ dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
   if (!NIL_P(_interface))
     interface = NUM2ULONG(_interface);
 
-  GetDNSSDService(self, client);
+  get(cDNSSDService, self, DNSServiceRef, client);
 
   e = DNSServiceEnumerateDomains(client, flags, interface,
       dnssd_service_enumerate_domains_reply, (void *)self);
@@ -397,7 +439,7 @@ dnssd_service_getaddrinfo(VALUE self, VALUE _host, VALUE _protocol,
   if (!NIL_P(_interface))
     interface = NUM2ULONG(_interface);
 
-  GetDNSSDService(self, client);
+  get(cDNSSDService, self, DNSServiceRef, client);
 
   e = DNSServiceGetAddrInfo(client, flags, interface, protocol, host,
       dnssd_service_getaddrinfo_reply, (void *)self);
@@ -437,6 +479,7 @@ dnssd_service_register(VALUE self, VALUE _name, VALUE _type, VALUE _domain,
   char *txt_rec = NULL;
   DNSServiceFlags flags = 0;
   uint32_t interface = 0;
+  DNSServiceRegisterReply callback = NULL;
 
   DNSServiceErrorType e;
   DNSServiceRef *client;
@@ -463,11 +506,13 @@ dnssd_service_register(VALUE self, VALUE _name, VALUE _type, VALUE _domain,
   if (!NIL_P(_interface))
     interface = NUM2ULONG(_interface);
 
-  GetDNSSDService(self, client);
+  if (rb_block_given_p())
+    callback = dnssd_service_register_reply;
+
+  get(cDNSSDService, self, DNSServiceRef, client);
 
   e = DNSServiceRegister(client, flags, interface, name, type,
-      domain, host, port, txt_len, txt_rec, dnssd_service_register_reply,
-      (void*)self);
+      domain, host, port, txt_len, txt_rec, callback, (void*)self);
 
   dnssd_check_error_code(e);
 
@@ -522,7 +567,7 @@ dnssd_service_resolve(VALUE self, VALUE _name, VALUE _type, VALUE _domain,
   if (!NIL_P(_interface))
     interface = NUM2ULONG(_interface);
 
-  GetDNSSDService(self, client);
+  get(cDNSSDService, self, DNSServiceRef, client);
 
   e = DNSServiceResolve(client, flags, interface, name, type, domain,
       dnssd_service_resolve_reply, (void *)self);
@@ -543,13 +588,17 @@ Init_DNSSD_Service(void) {
   dnssd_iv_domain      = rb_intern("@domain");
   dnssd_iv_interface   = rb_intern("@interface");
   dnssd_iv_port        = rb_intern("@port");
+  dnssd_iv_records     = rb_intern("@records");
   dnssd_iv_replies     = rb_intern("@replies");
+  dnssd_iv_service     = rb_intern("@service");
   dnssd_iv_target      = rb_intern("@target");
   dnssd_iv_text_record = rb_intern("@text_record");
   dnssd_iv_thread      = rb_intern("@thread");
+  dnssd_iv_type        = rb_intern("@type");
 
   cDNSSDAddrInfo   = rb_path2class("DNSSD::AddrInfo");
   cDNSSDFlags      = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
+  cDNSSDRecord     = rb_define_class_under(mDNSSD, "Record", rb_cObject);
   cDNSSDReply      = rb_define_class_under(mDNSSD, "Reply", rb_cObject);
   cDNSSDService    = rb_define_class_under(mDNSSD, "Service", rb_cObject);
   cDNSSDTextRecord = rb_define_class_under(mDNSSD, "TextRecord", rb_cObject);
@@ -579,6 +628,7 @@ Init_DNSSD_Service(void) {
   rb_define_method(cDNSSDService, "stop", dnssd_service_stop, 0);
   rb_define_method(cDNSSDService, "stopped?", dnssd_service_stopped_p, 0);
 
+  rb_define_method(cDNSSDService, "_add_record", dnssd_service_add_record, 4);
   rb_define_method(cDNSSDService, "_browse", dnssd_service_browse, 4);
   rb_define_method(cDNSSDService, "_enumerate_domains", dnssd_service_enumerate_domains, 2);
   rb_define_method(cDNSSDService, "_getaddrinfo", dnssd_service_getaddrinfo, 4);

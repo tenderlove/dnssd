@@ -117,9 +117,14 @@ module DNSSD
                     interface = DNSSD::InterfaceAny, &block)
     service = DNSSD::Service.new
 
-    Thread.start do
-      run(service, :register, name, type, domain, port, nil, text_record,
-          flags, interface, &block)
+    if block_given? then
+      Thread.start do
+        run(service, :register, name, type, domain, port, nil, text_record,
+            flags, interface, &block)
+      end
+    else
+      service.register name, type, domain, port, nil, text_record, flags,
+                       interface
     end
 
     service
@@ -132,8 +137,15 @@ module DNSSD
                      interface = DNSSD::InterfaceAny, &block)
     service = DNSSD::Service.new
 
-    run(service, :register, name, type, domain, port, nil, text_record, flags,
-        interface, &block)
+    if block_given? then
+      run(service, :register, name, type, domain, port, nil, text_record, flags,
+          interface, &block)
+    else
+      service.register name, type, domain, port, nil, text_record, flags,
+                       interface
+    end
+
+    service
   end
 
   ##
@@ -183,4 +195,5 @@ require 'dnssd/flags'
 require 'dnssd/reply'
 require 'dnssd/text_record'
 require 'dnssd/service'
+require 'dnssd/record'
 

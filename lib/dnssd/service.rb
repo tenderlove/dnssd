@@ -15,6 +15,22 @@ class DNSSD::Service
     @replies = []
     @continue = true
     @thread = nil
+    @type = nil
+  end
+
+  ##
+  # Adds an extra DNS record of +type+ containing +data+.  +ttl+ is in
+  # seconds, use 0 for the default value.  +flags+ are currently ignored.  
+  #
+  # Must be called on a service only after #register.
+  #
+  # Returns the added DNSSD::Record
+
+  def add_record(type, data, ttl = 0, flags = 0)
+    raise TypeError, 'must be called after register' unless @type == :register
+    @records ||= []
+
+    _add_record flags, type, data, ttl
   end
 
   ##
@@ -36,6 +52,8 @@ class DNSSD::Service
     interface = DNSSD.interface_index interface unless Integer === interface
 
     raise DNSSD::Error, 'service in progress' if started?
+
+    @type = :browse
 
     _browse type, domain, flags.to_i, interface
 
@@ -76,6 +94,8 @@ class DNSSD::Service
     raise DNSSD::Error, 'service in progress' if started?
 
     _enumerate_domains flags.to_i, interface
+
+    @type = :enumerate_domains
 
     process(&block)
   end
@@ -121,14 +141,16 @@ class DNSSD::Service
                flags = 0, interface = DNSSD::InterfaceAny, &block)
     check_domain domain
     interface = DNSSD.interface_index interface unless Integer === interface
+    text_record = text_record.encode if text_record
 
     raise DNSSD::Error, 'service in progress' if started?
 
-    _register name, type, domain, host, port, text_record, flags.to_i, interface
+    _register name, type, domain, host, port, text_record, flags.to_i,
+              interface, &block
 
-    block = proc { } unless block
+    @type = :register
 
-    process(&block)
+    process(&block) if block
   end
 
   ##
@@ -161,6 +183,8 @@ class DNSSD::Service
     raise DNSSD::Error, 'service in progress' if started?
 
     _resolve name, type, domain, flags.to_i, interface
+
+    @type = :resolve
 
     process(&block)
   end
