@@ -1,10 +1,5 @@
 #include "dnssd.h"
 
-#ifndef DNSSD_API
-  /* define as nothing if not defined in Apple's "dns_sd.h" header  */
-  #define DNSSD_API
-#endif
-
 static VALUE mDNSSD;
 static VALUE cDNSSDAddrInfo;
 static VALUE cDNSSDFlags;
