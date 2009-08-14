@@ -1,63 +1,51 @@
-#!/usr/bin/env ruby
-# :stopdoc:
+require 'mkmf'
+
+$CFLAGS << ' -Wall' if with_config 'warnings'
+
+dir_config 'dnssd'
+
+abort 'unable to find dnssd header' unless have_header 'dns_sd.h'
+
+have_library('dnssd')  ||
+have_library('dns_sd') ||
+have_library('mdns')   ||
+have_library('System') ||
+abort('unable to find dnssd library')
+
+have_macro('htons', 'arpa/inet.h') ||
+have_func('htons', 'arpa/inet.h')  ||
+abort("couldn't find htons")
+
+have_macro('ntohs', 'arpa/inet.h') ||
+have_func('ntohs', 'arpa/inet.h')  ||
+abort("couldn't find ntohs")
+
+# These functions live in netioapi.h on Windows, not net/if.h. The MSDN
+# documentation says to include iphlpapi.h, not netioapi.h directly.
 #
-# Extension configuration script for DNS_SD C Extension.
-
-def check_for_funcs(*funcs)
-  funcs.flatten!
-  funcs.each do |f|
-    abort("need function #{f}") unless have_func(f)
-  end
+# Note, however, that these functions only exist on Vista/Server 2008 or later.
+# On Windows XP and earlier you will have to define a custom version of each
+# function using native functions, such as ConvertInterfaceIndexToLuid() and
+# ConvertInterfaceLuidToNameA().
+#
+if have_header 'iphlpapi.h' then
+  have_func('if_indextoname', %w[iphlpapi.h netioapi.h]) &&
+  have_func('if_nametoindex', %w[iphlpapi.h netioapi.h]) ||
+  abort('unable to find if_indextoname or if_nametoindex')
+else
+  have_func('if_indextoname', %w[sys/types.h sys/socket.h net/if.h]) &&
+  have_func('if_nametoindex', %w[sys/types.h sys/socket.h net/if.h]) ||
+  abort('unable to find if_indextoname or if_nametoindex')
 end
 
-require "mkmf"
+have_func('getservbyport', 'netdb.h') ||
+abort('unable to find getservbyport')
 
-$CFLAGS << " -Wall"
-$CFLAGS << " -DDEBUG" if $DEBUG
+have_type('struct sockaddr_in', 'netinet/in.h') ||
+abort('unable to find struct sockaddr_in')
 
-libraries = {
-  'mdns'   => 'DNSServiceRefSockFD',
-  'dns_sd' => 'DNSServiceRefSockFD',
-  'System' => 'DNSServiceRefSockFD'
-}.sort
+have_struct_member 'struct sockaddr_in', 'sin_len', 'netinet/in.h'
+# otherwise, use sizeof()
 
-dnssd_found = libraries.any? do |library, function|
-  have_library library, function
-end
-
-unless dnssd_found then
-  abort "Couldn't find DNSSD in libraries #{libraries.keys.join ', '}"
-end
-
-have_header "dns_sd.h" or abort "can't find the rendezvous client headers"
-
-have_header "unistd.h"
-have_header "sys/types.h"
-have_header "sys/socket.h"
-have_header "sys/param.h"
-have_header "sys/if.h"
-have_header "net/if.h"
-have_header "arpa/inet.h"
-have_header "netdb.h"
-
-abort "need function #{f}" unless have_macro("htons") || have_func("htons")
-abort "need function #{f}" unless have_macro("ntohs") || have_func("ntohs")
-
-check_for_funcs "if_indextoname", "if_nametoindex"
-have_func "gethostname"
-
-s1 = check_sizeof "void*"
-s2 = check_sizeof("DNSServiceFlags", "dns_sd.h") or
-  abort("can't determine sizeof(DNSServiceFlags)")
-
-# need to make sure storing unsigned integer in void * is OK.
-s1 >= s2 or abort("sizeof(void*) < sizeof(DNSServiceFlags) please contact the authors!")
-
-if have_struct_member 'struct sockaddr_in', 'sin_len', 'netdb.h' then
-  $defs[-1] = '-DHAVE_SIN_LEN'
-end
-
-create_makefile "dnssd"
-
-# :startdoc:
+create_makefile 'dnssd'
 

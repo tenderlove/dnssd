@@ -30,6 +30,7 @@ require 'rake/extensiontask'
 
 Rake::ExtensionTask.new 'dnssd', HOE.spec do |ext|
   ext.lib_dir = File.join 'lib', 'dnssd'
+  ext.config_options << '--with-warnings'
 end
 
 task :test => :compile

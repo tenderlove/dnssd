@@ -1,5 +1,4 @@
 #include "dnssd.h"
-#include <assert.h>
 
 VALUE eDNSSDError;
 static VALUE eDNSSDUnknownError;
@@ -11,8 +10,13 @@ static VALUE dnssd_errors[DNSSD_ERROR_END - DNSSD_ERROR_START];
 
 static void
 dnssd_errors_store(VALUE error, DNSServiceErrorType err) {
-  assert(DNSSD_ERROR_START <= err && err <= DNSSD_ERROR_END);
-  dnssd_errors[err - DNSSD_ERROR_START] = error;
+  if (DNSSD_ERROR_START <= err && err <= DNSSD_ERROR_END) {
+    dnssd_errors[err - DNSSD_ERROR_START] = error;
+  } else {
+    rb_raise(eDNSSDError,
+        "invalid error number %d (expected between %d and %d)",
+        err, DNSSD_ERROR_START, DNSSD_ERROR_END);
+  }
 }
 
 void
