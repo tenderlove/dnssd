@@ -1,5 +1,7 @@
 require 'dnssd'
 
+Thread.abort_on_exception = true
+
 trap 'INT'  do exit end
 trap 'TERM' do exit end
 

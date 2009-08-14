@@ -1,5 +1,7 @@
 require 'dnssd'
 
+Thread.abort_on_exception = true
+
 services = []
 
 browser = DNSSD.browse '_presence._tcp' do |reply|

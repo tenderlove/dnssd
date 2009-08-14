@@ -1,6 +1,8 @@
 require 'dnssd'
 require 'pp'
 
+Thread.abort_on_exception = true
+
 class ChatNameResolver
   def self.resolve_add(reply)
     Thread.new reply do |reply|

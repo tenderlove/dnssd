@@ -1,5 +1,7 @@
 require 'dnssd'
 
+Thread.abort_on_exception = true
+
 port = Socket.getservbyname 'blackjack'
 blackjack = TCPServer.new nil, port
 

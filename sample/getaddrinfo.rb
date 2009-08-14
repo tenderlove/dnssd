@@ -1,5 +1,7 @@
 require 'dnssd'
 
+Thread.abort_on_exception = true
+
 abort "#{$0} \"http service name\"" if ARGV.empty?
 
 resolver = DNSSD.resolve ARGV.shift, '_http._tcp', 'local' do |reply|

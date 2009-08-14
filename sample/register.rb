@@ -1,5 +1,7 @@
 require 'dnssd'
 
+Thread.abort_on_exception = true
+
 DNSSD.register "hey ruby", "_http._tcp", nil, 8081
 
 registrar = DNSSD.register "chad ruby", "_http._tcp", nil, 8080 do |reply|
