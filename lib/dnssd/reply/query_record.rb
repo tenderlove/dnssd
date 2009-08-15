@@ -43,5 +43,35 @@ class DNSSD::Reply::QueryRecord < DNSSD::Reply
   def expired?
     Time.now > @created + ttl
   end
+
+  def inspect # :nodoc:
+    "#<%s:0x%x %s %s %s %p interface: %s flags: %p>" % [
+      self.class, object_id,
+      fullname, record_class_name, record_type_name, record,
+      interface_name, @flags
+    ]
+  end
+
+  ##
+  # Name of this record's record_class
+
+  def record_class_name
+    'IN' # Only IN is supported
+  end
+
+  ##
+  # Name of this record's record_type
+
+  def record_type_name
+    DNSSD::Record::VALUE_TO_NAME[@record_type]
+  end
+
+  ##
+  # Outputs this record in a BIND-like DNS format
+
+  def to_s
+    "%s %s %s %p" % [fullname, record_class_name, record_type_name, @record]
+  end
+
 end
 

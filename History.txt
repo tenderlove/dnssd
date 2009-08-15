@@ -10,6 +10,7 @@
   * DNSSD::Reply#connect now uses DNSSD::Service#getaddrinfo (faster)
   * DNSSD::Service#register behaves properly when blockless
   * Broke up DNSSD::Reply into specific subclasses
+  * Added sample/query_record.rb
   * sample/*.rb work with each other now for clarity of implementation
 
 * N bug fixes
