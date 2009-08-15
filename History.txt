@@ -4,10 +4,13 @@
   * Added DNSSD::Service.get_property
   * Added DNSSD::Service#getaddrinfo
   * Added DNSSD::Service#add_record
+  * Added DNSSD::Service#query_record
 
 * N minor enhancements
   * DNSSD::Reply#connect now uses DNSSD::Service#getaddrinfo (faster)
   * DNSSD::Service#register behaves properly when blockless
+  * Broke up DNSSD::Reply into specific subclasses
+  * sample/*.rb work with each other now for clarity of implementation
 
 * N bug fixes
   * Fix hierarchical domains like <tt>\.mac\.name.members.mac.com.</tt>

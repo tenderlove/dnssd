@@ -47,13 +47,13 @@ class DNSSD::Reply
   # Expands the name of the interface including constants
 
   def interface_name
-    interface = case interface
-                when nil                       then 'nil'
-                when DNSSD::InterfaceAny       then 'any'
-                when DNSSD::InterfaceLocalOnly then 'local'
-                when DNSSD::InterfaceUnicast   then 'unicast'
-                else interface
-                end
+    case @interface
+    when nil                       then 'nil'
+    when DNSSD::InterfaceAny       then 'any'
+    when DNSSD::InterfaceLocalOnly then 'local'
+    when DNSSD::InterfaceUnicast   then 'unicast'
+    else @interface
+    end
   end
 
   ##
