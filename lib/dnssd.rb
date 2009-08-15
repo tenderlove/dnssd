@@ -186,13 +186,18 @@ end
 
 require 'socket'
 
-require 'dnssd/addr_info'
+require 'dnssd/reply'
+require 'dnssd/reply/addr_info'
+require 'dnssd/reply/browse'
+require 'dnssd/reply/domain'
+require 'dnssd/reply/query_record'
+require 'dnssd/reply/register'
+require 'dnssd/reply/resolve'
 
 # The C extension uses above-defined classes
 require 'dnssd/dnssd'
 
 require 'dnssd/flags'
-require 'dnssd/reply'
 require 'dnssd/text_record'
 require 'dnssd/service'
 require 'dnssd/record'

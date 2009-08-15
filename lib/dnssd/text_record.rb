@@ -41,6 +41,13 @@ class DNSSD::TextRecord
   end
 
   ##
+  # Is this TextRecord empty?
+
+  def empty?
+    @records.empty?
+  end
+
+  ##
   # Encodes this TextRecord.  A key value pair must be less than 255 bytes in
   # length.  Keys longer than 14 bytes may not be compatible with all
   # clients.
@@ -61,8 +68,16 @@ class DNSSD::TextRecord
     end.join ''
   end
 
+  def inspect # :nodoc:
+    @records.inspect
+  end
+
   def to_hash
     @records.dup
+  end
+
+  def to_s # :nodoc:
+    @records.to_s
   end
 
 end

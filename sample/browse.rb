@@ -1,23 +1,29 @@
 require 'dnssd'
 
 Thread.abort_on_exception = true
+trap 'INT' do exit end
+trap 'TERM' do exit end
 
-services = []
+browser = DNSSD::Service.new
+services = {}
 
-browser = DNSSD.browse '_presence._tcp' do |reply|
-  services << reply
+puts "Browsing for TCP blackjack service"
+puts "(run sample/register.rb)"
+puts
+
+browser.browse '_blackjack._tcp' do |reply|
+  services[reply.fullname] = reply
   next if reply.flags.more_coming?
 
-  puts "Presence services found:"
-  services.each do |service|
-    puts "#{service.name} on #{service.domain}"
+  services.sort_by do |_, service|
+    [(service.flags.add? ? 0 : 1), service.fullname]
+  end.each do |_, service|
+    add = service.flags.add? ? 'Add' : 'Remove'
+    puts "#{add} #{service.name} on #{service.domain}"
   end
 
-  exit
+  services.clear
+
+  puts
 end
-
-trap 'INT' do browser.stop; exit end
-trap 'TERM' do browser.stop; exit end
-
-sleep
 

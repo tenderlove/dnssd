@@ -78,11 +78,9 @@ class DNSSD::Service
   #
   #   available_domains = []
   #   
-  #   timeout(2) do
-  #     DNSSD.enumerate_domains! do |r|
-  #       available_domains << r.domain
-  #     end
-  #   rescue TimeoutError
+  #   service.enumerate_domains! do |r|
+  #     available_domains << r.domain
+  #     break unless r.flags.more_coming?
   #   end
   #   
   #   p available_domains
@@ -108,6 +106,8 @@ class DNSSD::Service
 
     _getaddrinfo host, protocol, flags.to_i, interface
 
+    @type = :getaddrinfo
+
     process(&block)
   end
   
@@ -127,13 +127,39 @@ class DNSSD::Service
     @thread = nil
 
     self
+  rescue DNSSD::ServiceNotRunningError
+    # raised when we jump out of DNSServiceProcess() while it's waiting for a
+    # response
+    self
+  end
+
+  ##
+  # Retrieves an arbitrary DNS record
+  #
+  # +fullname+ is the full name of the resource record.  +record_type+ is the
+  # type of the resource record (see DNSSD::Resource).
+  #
+  # +flags+ may be either DNSSD::Flags::ForceMulticast or
+  # DNSSD::Flags::LongLivedQuery
+
+  def query_record(fullname, record_type, record_class = DNSSD::Record::IN,
+                   flags = 0, interface = DNSSD::InterfaceAny)
+    interface = DNSSD.interface_index interface unless Integer === interface
+
+    raise DNSSD::Error, 'service in progress' if started?
+
+    _query_record flags.to_i, interface, fullname, record_type, record_class
+
+    @type = :query_record
+
+    process(&block)
   end
 
   ##
   # Register a service.  A DNSSD::Reply object is passed to the optional block
   # when the registration completes.
   #
-  #   DNSSD.register! "My Files", "_http._tcp", nil, 8080 do |r|
+  #   service.register "My Files", "_http._tcp", nil, 8080 do |r|
   #     puts "successfully registered: #{r.inspect}"
   #   end
 
@@ -168,11 +194,9 @@ class DNSSD::Service
   # The returned service can be used to control when to stop resolving the
   # service (see DNSSD::Service#stop).
   #
-  #   s = DNSSD.resolve "foo bar", "_http._tcp", "local" do |r|
+  #   service.resolve "foo bar", "_http._tcp", "local" do |r|
   #     p r
   #   end
-  #   sleep 2
-  #   s.stop
 
   def resolve(name, type = name.type, domain = name.domain, flags = 0,
               interface = DNSSD::InterfaceAny, &block)

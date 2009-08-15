@@ -1,10 +1,14 @@
 #include "dnssd.h"
 
 static VALUE mDNSSD;
-static VALUE cDNSSDAddrInfo;
 static VALUE cDNSSDFlags;
 static VALUE cDNSSDRecord;
-static VALUE cDNSSDReply;
+static VALUE cDNSSDReplyAddrInfo;
+static VALUE cDNSSDReplyBrowse;
+static VALUE cDNSSDReplyDomain;
+static VALUE cDNSSDReplyQueryRecord;
+static VALUE cDNSSDReplyRegister;
+static VALUE cDNSSDReplyResolve;
 static VALUE cDNSSDService;
 static VALUE cDNSSDTextRecord;
 static VALUE rb_cSocket;
@@ -13,14 +17,9 @@ static ID dnssd_id_join;
 static ID dnssd_id_push;
 
 static ID dnssd_iv_continue;
-static ID dnssd_iv_domain;
-static ID dnssd_iv_interface;
-static ID dnssd_iv_port;
 static ID dnssd_iv_records;
 static ID dnssd_iv_replies;
 static ID dnssd_iv_service;
-static ID dnssd_iv_target;
-static ID dnssd_iv_text_record;
 static ID dnssd_iv_thread;
 static ID dnssd_iv_type;
 
@@ -71,26 +70,6 @@ create_fullname(const char *name, const char *regtype,
 
   buffer[kDNSServiceMaxDomainName - 1] = '\000'; /* just in case */
   return rb_str_new2(buffer);
-}
-
-static VALUE
-reply_new(VALUE service, DNSServiceFlags flags) {
-  return rb_funcall(cDNSSDReply, rb_intern("from_service"), 2, service,
-                    UINT2NUM(flags));
-}
-
-static void
-reply_set_interface(VALUE self, uint32_t interface) {
-  VALUE if_value;
-  char buffer[IF_NAMESIZE];
-
-  if (if_indextoname(interface, buffer)) {
-    if_value = rb_str_new2(buffer);
-  } else {
-    if_value = ULONG2NUM(interface);
-  }
-
-  rb_ivar_set(self, dnssd_iv_interface, if_value);
 }
 
 /*
@@ -298,16 +277,20 @@ static void DNSSD_API
 dnssd_service_browse_reply(DNSServiceRef client, DNSServiceFlags flags,
     uint32_t interface, DNSServiceErrorType e, const char *name,
     const char *type, const char *domain, void *context) {
-  VALUE service, reply;
+  VALUE service, reply, argv[6];
 
   dnssd_check_error_code(e);
 
   service = (VALUE)context;
 
-  reply = reply_new(service, flags);
-  reply_set_interface(reply, interface);
-  rb_funcall(reply, rb_intern("set_names"), 3, rb_str_new2(name),
-      rb_str_new2(type), rb_str_new2(domain));
+  argv[0] = service;
+  argv[1] = ULONG2NUM(flags);
+  argv[2] = ULONG2NUM(interface);
+  argv[3] = rb_str_new2(name);
+  argv[4] = rb_str_new2(type);
+  argv[5] = rb_str_new2(domain);
+
+  reply = rb_class_new_instance(6, argv, cDNSSDReplyBrowse);
 
   dnssd_service_callback(service, reply);
 }
@@ -351,15 +334,18 @@ static void DNSSD_API
 dnssd_service_enumerate_domains_reply(DNSServiceRef client,
     DNSServiceFlags flags, uint32_t interface, DNSServiceErrorType e,
     const char *domain, void *context) {
-  VALUE service, reply;
+  VALUE service, reply, argv[4];
 
   dnssd_check_error_code(e);
 
   service = (VALUE)context;
 
-  reply = reply_new(service, flags);
-  reply_set_interface(reply, interface);
-  rb_ivar_set(reply, dnssd_iv_domain, rb_str_new2(domain));
+  argv[0] = service;
+  argv[1] = ULONG2NUM(flags);
+  argv[2] = ULONG2NUM(interface);
+  argv[3] = rb_str_new2(domain);
+
+  reply = rb_class_new_instance(4, argv, cDNSSDReplyDomain);
 
   dnssd_service_callback(service, reply);
 }
@@ -395,25 +381,20 @@ static void DNSSD_API
 dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
     uint32_t interface, DNSServiceErrorType e, const char *host,
     const struct sockaddr *address, uint32_t ttl, void *context) {
-  VALUE service, reply, argv[5];
+  VALUE service, reply, argv[6];
 
   dnssd_check_error_code(e);
 
   service = (VALUE)context;
 
-  argv[0] = rb_str_new2(host);
-  argv[1] = rb_funcall(rb_cSocket, rb_intern("unpack_sockaddr_in"), 1,
-      rb_str_new((char *)address, SIN_LEN((struct sockaddr_in*)address)));
-  argv[2] = ULONG2NUM(ttl);
-  if (interface > 0) {
-    argv[3] = rb_funcall(mDNSSD, rb_intern("interface_name"), 1,
-        UINT2NUM(interface));
-  } else {
-    argv[3] = UINT2NUM(interface);
-  }
-  argv[4] = rb_funcall(cDNSSDFlags, rb_intern("new"), 1, UINT2NUM(flags));
+  argv[0] = service;
+  argv[1] = ULONG2NUM(flags);
+  argv[2] = ULONG2NUM(interface);
+  argv[3] = rb_str_new2(host);
+  argv[4] = rb_str_new((char *)address, SIN_LEN((struct sockaddr_in*)address));
+  argv[5] = ULONG2NUM(ttl);
 
-  reply = rb_class_new_instance(5, argv, cDNSSDAddrInfo);
+  reply = rb_class_new_instance(6, argv, cDNSSDReplyAddrInfo);
 
   dnssd_service_callback(service, reply);
 }
@@ -450,18 +431,74 @@ dnssd_service_getaddrinfo(VALUE self, VALUE _host, VALUE _protocol,
 }
 
 static void DNSSD_API
-dnssd_service_register_reply(DNSServiceRef client, DNSServiceFlags flags,
-    DNSServiceErrorType e, const char *name, const char *type,
-    const char *domain, void *context) {
-  VALUE service, reply;
+dnssd_service_query_record_reply(DNSServiceRef client, DNSServiceFlags flags,
+    uint32_t interface, DNSServiceErrorType e, const char *fullname,
+    uint16_t rrtype, uint16_t rrclass, uint16_t rdlen, const void *rdata,
+    uint32_t ttl, void *context) {
+  VALUE service, reply, argv[8];
 
   dnssd_check_error_code(e);
 
   service = (VALUE)context;
 
-  reply = reply_new(service, flags);
-  rb_funcall(reply, rb_intern("set_names"), 3, rb_str_new2(name),
-      rb_str_new2(type), rb_str_new2(domain));
+  argv[0] = service;
+  argv[1] = ULONG2NUM(flags);
+  argv[2] = ULONG2NUM(interface);
+  argv[3] = rb_str_new2(fullname);
+  argv[4] = UINT2NUM(rrtype);
+  argv[5] = UINT2NUM(rrclass);
+  argv[6] = rb_str_new((char *)rdata, rdlen);
+  argv[7] = ULONG2NUM(ttl);
+
+  reply = rb_class_new_instance(8, argv, cDNSSDReplyQueryRecord);
+
+  dnssd_service_callback(service, reply);
+}
+
+static VALUE
+dnssd_service_query_record(VALUE self, VALUE _flags, VALUE _interface,
+    VALUE _fullname, VALUE _rrtype, VALUE _rrclass) {
+  DNSServiceRef *client;
+  DNSServiceFlags flags;
+  DNSServiceErrorType e;
+  char *fullname;
+  uint32_t interface;
+  uint16_t rrtype;
+  uint16_t rrclass;
+
+  flags = (DNSServiceFlags)NUM2ULONG(_flags);
+  interface = NUM2ULONG(_interface);
+  fullname = StringValueCStr(_fullname);
+  rrtype = NUM2UINT(_rrtype);
+  rrclass = NUM2UINT(_rrclass);
+  
+  get(cDNSSDService, self, DNSServiceRef, client);
+
+  e = DNSServiceQueryRecord(client, flags, interface, fullname, rrtype,
+      rrclass, dnssd_service_query_record_reply, (void *)self);
+
+  dnssd_check_error_code(e);
+
+  return self;
+}
+
+static void DNSSD_API
+dnssd_service_register_reply(DNSServiceRef client, DNSServiceFlags flags,
+    DNSServiceErrorType e, const char *name, const char *type,
+    const char *domain, void *context) {
+  VALUE service, reply, argv[5];
+
+  dnssd_check_error_code(e);
+
+  service = (VALUE)context;
+
+  argv[0] = service;
+  argv[1] = ULONG2NUM(flags);
+  argv[2] = rb_str_new2(name);
+  argv[3] = rb_str_new2(type);
+  argv[4] = rb_str_new2(domain);
+  
+  reply = rb_class_new_instance(5, argv, cDNSSDReplyRegister);
 
   dnssd_service_callback(service, reply);
 }
@@ -524,22 +561,21 @@ dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
     uint32_t interface, DNSServiceErrorType e, const char *name,
     const char *target, uint16_t port, uint16_t txt_len,
     const unsigned char *txt_rec, void *context) {
-  VALUE service, reply, text_record, text_record_str;
+  VALUE service, reply, argv[7];
 
   dnssd_check_error_code(e);
 
   service = (VALUE)context;
 
-  reply = reply_new(service, flags);
-
-  reply_set_interface(reply, interface);
-  rb_funcall(reply, rb_intern("set_fullname"), 1, rb_str_new2(name));
-  rb_ivar_set(reply, dnssd_iv_target, rb_str_new2(target));
-  rb_ivar_set(reply, dnssd_iv_port, UINT2NUM(ntohs(port)));
-
-  text_record_str = rb_str_new((char *)txt_rec, txt_len);
-  text_record = rb_class_new_instance(1, &text_record_str, cDNSSDTextRecord);
-  rb_ivar_set(reply, dnssd_iv_text_record, text_record);
+  argv[0] = service;
+  argv[1] = ULONG2NUM(flags);
+  argv[2] = ULONG2NUM(interface);
+  argv[3] = rb_str_new2(name);
+  argv[4] = rb_str_new2(target);
+  argv[5] = UINT2NUM(ntohs(port));
+  argv[6] = rb_str_new((char *)txt_rec, txt_len);
+  
+  reply = rb_class_new_instance(7, argv, cDNSSDReplyResolve);
 
   dnssd_service_callback(service, reply);
 }
@@ -585,23 +621,23 @@ Init_DNSSD_Service(void) {
   dnssd_id_push = rb_intern("push");
 
   dnssd_iv_continue    = rb_intern("@continue");
-  dnssd_iv_domain      = rb_intern("@domain");
-  dnssd_iv_interface   = rb_intern("@interface");
-  dnssd_iv_port        = rb_intern("@port");
   dnssd_iv_records     = rb_intern("@records");
   dnssd_iv_replies     = rb_intern("@replies");
   dnssd_iv_service     = rb_intern("@service");
-  dnssd_iv_target      = rb_intern("@target");
-  dnssd_iv_text_record = rb_intern("@text_record");
   dnssd_iv_thread      = rb_intern("@thread");
   dnssd_iv_type        = rb_intern("@type");
 
-  cDNSSDAddrInfo   = rb_path2class("DNSSD::AddrInfo");
   cDNSSDFlags      = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
   cDNSSDRecord     = rb_define_class_under(mDNSSD, "Record", rb_cObject);
-  cDNSSDReply      = rb_define_class_under(mDNSSD, "Reply", rb_cObject);
   cDNSSDService    = rb_define_class_under(mDNSSD, "Service", rb_cObject);
   cDNSSDTextRecord = rb_define_class_under(mDNSSD, "TextRecord", rb_cObject);
+
+  cDNSSDReplyAddrInfo    = rb_path2class("DNSSD::Reply::AddrInfo");
+  cDNSSDReplyBrowse      = rb_path2class("DNSSD::Reply::Browse");
+  cDNSSDReplyDomain      = rb_path2class("DNSSD::Reply::Domain");
+  cDNSSDReplyQueryRecord = rb_path2class("DNSSD::Reply::QueryRecord");
+  cDNSSDReplyRegister    = rb_path2class("DNSSD::Reply::Register");
+  cDNSSDReplyResolve     = rb_path2class("DNSSD::Reply::Resolve");
   
   rb_cSocket = rb_path2class("Socket");
 
@@ -632,6 +668,7 @@ Init_DNSSD_Service(void) {
   rb_define_method(cDNSSDService, "_browse", dnssd_service_browse, 4);
   rb_define_method(cDNSSDService, "_enumerate_domains", dnssd_service_enumerate_domains, 2);
   rb_define_method(cDNSSDService, "_getaddrinfo", dnssd_service_getaddrinfo, 4);
+  rb_define_method(cDNSSDService, "_query_record", dnssd_service_query_record, 5);
   rb_define_method(cDNSSDService, "_register", dnssd_service_register, 8);
   rb_define_method(cDNSSDService, "_resolve", dnssd_service_resolve, 5);
 
