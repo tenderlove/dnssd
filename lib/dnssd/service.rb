@@ -119,7 +119,7 @@ class DNSSD::Service
 
     process(&block)
   end
-  
+
   def inspect # :nodoc:
     stopped = stopped? ? 'stopped' : 'running'
     "#<%s:0x%x %s>" % [self.class, object_id, stopped]
