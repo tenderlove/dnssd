@@ -236,6 +236,9 @@ dnssd_service_process(VALUE self) {
   return self;
 }
 
+/* Binding to DNSServiceAddRecord
+ */
+
 static VALUE
 dnssd_service_add_record(VALUE self, VALUE _flags, VALUE _rrtype, VALUE _rdata,
     VALUE _ttl) {
@@ -399,6 +402,9 @@ dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
   dnssd_service_callback(service, reply);
 }
 
+/* Binding to DNSServiceGetAddrInfo
+ */
+
 static VALUE
 dnssd_service_getaddrinfo(VALUE self, VALUE _host, VALUE _protocol,
     VALUE _flags, VALUE _interface) {
@@ -454,6 +460,9 @@ dnssd_service_query_record_reply(DNSServiceRef client, DNSServiceFlags flags,
 
   dnssd_service_callback(service, reply);
 }
+
+/* Binding to DNSServiceQueryRecord
+ */
 
 static VALUE
 dnssd_service_query_record(VALUE self, VALUE _flags, VALUE _interface,
