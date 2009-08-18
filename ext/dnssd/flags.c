@@ -14,11 +14,30 @@ static const DNSServiceFlags dnssd_flag[DNSSD_MAX_FLAGS] = {
   kDNSServiceFlagsRegistrationDomains,
   kDNSServiceFlagsLongLivedQuery,
   kDNSServiceFlagsAllowRemoteQuery,
-  kDNSServiceFlagsForceMulticast,
-  kDNSServiceFlagsForce,
-  kDNSServiceFlagsReturnIntermediates,
-  kDNSServiceFlagsNonBrowsable,
-  kDNSServiceFlagsShareConnection
+  kDNSServiceFlagsForceMulticast
+#ifdef HAVE_KDNSSERVICEFLAGSFORCE
+, kDNSServiceFlagsForce
+#else
+, NULL
+#endif
+
+#ifdef HAVE_KDNSSERVICEFLAGSRETURNINTERMEDIATES
+, kDNSServiceFlagsReturnIntermediates
+#else
+, NULL
+#endif
+
+#ifdef HAVE_KDNSSERVICEFLAGSNONBROWSABLE
+, kDNSServiceFlagsNonBrowsable
+#else
+, NULL
+#endif
+
+#ifdef HAVE_KDNSSERVICEFLAGSSHARECONNECTION
+, kDNSServiceFlagsShareConnection
+#else
+, NULL
+#endif
 };
 
 static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
@@ -210,8 +229,9 @@ Init_DNSSD_Flags(void) {
   flags_hash = rb_hash_new();
 
   for (i = 0; i < DNSSD_MAX_FLAGS; i++) {
-    rb_hash_aset(flags_hash, rb_str_new2(dnssd_flag_name[i]),
-        ULONG2NUM(dnssd_flag[i]));
+    if (dnssd_flag[i])
+      rb_hash_aset(flags_hash, rb_str_new2(dnssd_flag_name[i]),
+          ULONG2NUM(dnssd_flag[i]));
   }
 
   /* Hash of flags => flag_name */
