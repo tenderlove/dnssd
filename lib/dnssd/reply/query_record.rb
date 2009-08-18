@@ -15,9 +15,24 @@ class DNSSD::Reply::QueryRecord < DNSSD::Reply
 
   attr_reader :name
 
+  ##
+  # DNS Record data
+
   attr_reader :record
+
+  ##
+  # DNS Record class (only IN is supported)
+
   attr_reader :record_class
+
+  ##
+  # DNS Record type
+
   attr_reader :record_type
+
+  ##
+  # Time-to-live for this record.  See #expired?
+
   attr_reader :ttl
 
   ##
