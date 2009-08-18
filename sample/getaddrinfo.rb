@@ -10,7 +10,7 @@ resolver = DNSSD.resolve ARGV.shift, '_http._tcp', 'local' do |reply|
   service = DNSSD::Service.new
   begin
     service.getaddrinfo reply.target do |addrinfo|
-      addresses << addrinfo.address.last
+      addresses << addrinfo.address
       break unless addrinfo.flags.more_coming?
     end
   ensure
