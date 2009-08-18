@@ -111,13 +111,28 @@ class DNSSD::Service
                   interface = DNSSD::InterfaceAny, &block)
     interface = DNSSD.interface_index interface unless Integer === interface
 
-    raise DNSSD::Error, 'service in progress' if started?
+    if respond_to? :_getaddrinfo then
+      raise DNSSD::Error, 'service in progress' if started?
 
-    _getaddrinfo flags.to_i, interface, protocol, host
+      _getaddrinfo flags.to_i, interface, protocol, host
 
-    @type = :getaddrinfo
+      @type = :getaddrinfo
 
-    process(&block)
+      process(&block)
+    else
+      family = case protocol
+               when 0   then nil
+               when IPv4 then Socket::AF_INET
+               when IPv6 then Socket::AF_INET6
+               end
+
+      addrinfo = Socket.getaddrinfo host, nil, family
+
+      addrinfo.each do |_, _, host, ip, _|
+        sockaddr = Socket.pack_sockaddr_in 0, ip
+        @replies << DNSSD::Reply::AddrInfo.new(self, 0, 0, host, sockaddr, 0)
+      end
+    end
   end
 
   def inspect # :nodoc:

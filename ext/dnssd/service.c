@@ -379,6 +379,7 @@ dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
   return self;
 }
 
+#ifdef HAVE_DNSSERVICEGETADDRINFO
 static void DNSSD_API
 dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
     uint32_t interface, DNSServiceErrorType e, const char *host,
@@ -437,6 +438,7 @@ dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
 
   return self;
 }
+#endif
 
 static void DNSSD_API
 dnssd_service_query_record_reply(DNSServiceRef client, DNSServiceFlags flags,
@@ -708,7 +710,9 @@ Init_DNSSD_Service(void) {
   rb_define_method(cDNSSDService, "_add_record", dnssd_service_add_record, 4);
   rb_define_method(cDNSSDService, "_browse", dnssd_service_browse, 4);
   rb_define_method(cDNSSDService, "_enumerate_domains", dnssd_service_enumerate_domains, 2);
+#ifdef HAVE_DNSSERVICEGETADDRINFO
   rb_define_method(cDNSSDService, "_getaddrinfo", dnssd_service_getaddrinfo, 4);
+#endif
   rb_define_method(cDNSSDService, "_query_record", dnssd_service_query_record, 5);
   rb_define_method(cDNSSDService, "_register", dnssd_service_register, 8);
   rb_define_method(cDNSSDService, "_resolve", dnssd_service_resolve, 5);
