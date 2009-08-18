@@ -671,9 +671,11 @@ Init_DNSSD_Service(void) {
   rb_define_const(cDNSSDService, "MAX_SERVICE_NAME",
       ULONG2NUM(kDNSServiceMaxServiceName));
 
+#ifdef kDNSServiceProperty_DaemonVersion
   /* DaemonVersion property value */
   rb_define_const(cDNSSDService, "DaemonVersion",
       rb_str_new2(kDNSServiceProperty_DaemonVersion));
+#endif
 
 #ifdef kDNSServiceProtocol_IPv4
   /* IPv4 protocol for #getaddrinfo */
