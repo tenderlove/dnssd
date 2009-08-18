@@ -18,25 +18,25 @@ static const DNSServiceFlags dnssd_flag[DNSSD_MAX_FLAGS] = {
 #ifdef HAVE_KDNSSERVICEFLAGSFORCE
 , kDNSServiceFlagsForce
 #else
-, NULL
+, (DNSSServiceFlags)NULL
 #endif
 
 #ifdef HAVE_KDNSSERVICEFLAGSRETURNINTERMEDIATES
 , kDNSServiceFlagsReturnIntermediates
 #else
-, NULL
+, (DNSServiceFlags)NULL
 #endif
 
 #ifdef HAVE_KDNSSERVICEFLAGSNONBROWSABLE
 , kDNSServiceFlagsNonBrowsable
 #else
-, NULL
+, (DNSSServiceFlags)NULL
 #endif
 
 #ifdef HAVE_KDNSSERVICEFLAGSSHARECONNECTION
 , kDNSServiceFlagsShareConnection
 #else
-, NULL
+, (DNSSServiceFlags)NULL
 #endif
 };
 
