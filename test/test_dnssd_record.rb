@@ -15,7 +15,7 @@ class TestDNSSDRecord < MiniTest::Unit::TestCase
 
   def test_class_to_data_invalid
     assert_raises ArgumentError do
-      @R.to_data -1
+      @R.to_data(-1)
     end
   end
 
