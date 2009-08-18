@@ -1,5 +1,11 @@
 require 'ipaddr'
 
+##
+# Created when adding a DNS record using DNSSD::Service#add_record.  Provides
+# convenience methods for creating the DNS record.
+#
+# See also {RFC 1035}[http://www.rfc-editor.org/rfc/rfc1035.txt]
+
 class DNSSD::Record
 
   value_to_name = constants.map do |name|

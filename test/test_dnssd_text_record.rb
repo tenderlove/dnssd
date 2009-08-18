@@ -68,9 +68,9 @@ class TestDNSSDTextRecord < MiniTest::Unit::TestCase
   end
 
   def test_decode_empty
-    assert_equal({}, @TR.new("").to_hash)
-    assert_equal({}, @TR.new("\x00").to_hash)
-    assert_equal({}, @TR.new("\x00\x00").to_hash)
+    assert_equal({}, @TR.new(""))
+    assert_equal({}, @TR.new("\x00"))
+    assert_equal({}, @TR.new("\x00\x00"))
   end
 
   def test_decode_value

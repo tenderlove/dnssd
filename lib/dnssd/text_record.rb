@@ -1,17 +1,36 @@
-##
-# DNSSD::TextRecord is a Hash wrapper that can encode its contents for DNSSD.
+require 'delegate'
 
-class DNSSD::TextRecord
+##
+# DNSSD::TextRecord is a Hash delegate that can encode its contents for DNSSD.
+
+class DNSSD::TextRecord < DelegateClass(Hash)
 
   ##
-  # Creates a new TextRecord, decoding an encoded +text_record+ if given.
+  # Creates a new TextRecord decoding an encoded +text_record+ if given or
+  # from a given Hash.
+  #
+  #   DNSSD::TextRecord.new "\003k=v"
+  #
+  # or
+  #
+  #   DNSSD::TextRecord.new 'k' => 'v'
 
   def initialize(text_record = nil)
-    @records = {}
+    super case text_record
+          when Hash then
+            text_record.dup
+          when String then
+            decode(text_record.dup)
+          else
+            Hash.new
+          end
+  end
 
-    return unless text_record
+  ##
+  # Decodes +text_record+ and returns a Hash
 
-    text_record = text_record.dup
+  def decode(text_record)
+    record = {}
 
     until text_record.empty? do
       size = text_record.slice! 0
@@ -28,23 +47,10 @@ class DNSSD::TextRecord
 
       next unless key
 
-      @records[key] = value
+      record[key] = value
     end
-  end
 
-  def [](key)
-    @records[key]
-  end
-
-  def []=(key, value)
-    @records[key] = value
-  end
-
-  ##
-  # Is this TextRecord empty?
-
-  def empty?
-    @records.empty?
+    record
   end
 
   ##
@@ -53,7 +59,7 @@ class DNSSD::TextRecord
   # clients.
 
   def encode
-    @records.sort.map do |key, value|
+    sort.map do |key, value|
       key = key.to_s
 
       raise DNSSD::Error, "empty key" if key.empty?
@@ -66,18 +72,6 @@ class DNSSD::TextRecord
 
       "#{record.length.chr}#{record}"
     end.join ''
-  end
-
-  def inspect # :nodoc:
-    @records.inspect
-  end
-
-  def to_hash
-    @records.dup
-  end
-
-  def to_s # :nodoc:
-    @records.to_s
   end
 
 end

@@ -33,6 +33,9 @@ class DNSSD::Reply::Resolve < DNSSD::Reply
 
   attr_reader :type
 
+  ##
+  # Creates a new Resolve, called internally by DNSSD::Service#resolve
+
   def initialize(service, flags, interface, fullname, target, port,
                  text_record)
     super service, flags, interface

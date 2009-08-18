@@ -18,6 +18,9 @@ class DNSSD::Reply::Browse < DNSSD::Reply
 
   attr_reader :type
 
+  ##
+  # Creates a new Browse, called internally by DNSSD::Service#browse
+
   def initialize(service, flags, interface, name, type, domain)
     super service, flags, interface
 
@@ -25,8 +28,8 @@ class DNSSD::Reply::Browse < DNSSD::Reply
   end
 
   ##
-  # Resolves this service's target and connects using
-  # DNSSD::Reply::Resolve#connect
+  # Resolves this service's target using DNSSD::Reply::Resolve#connect which
+  # connects, returning a TCP or UDP socket.
 
   def connect(family = Socket::AF_UNSPEC, addrinfo_flags = 0)
     value = nil

@@ -8,6 +8,10 @@ class DNSSD::Reply::Domain < DNSSD::Reply
 
   attr_reader :domain
 
+  ##
+  # Creates a new Browse, called internally by
+  # DNSSD::Service#enumerate_domains
+
   def initialize(flags, interface, domain)
     super flags, interface
 

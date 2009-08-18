@@ -74,7 +74,7 @@ create_fullname(const char *name, const char *regtype,
 
 /*
  * call-seq:
- *    DNSSD::Service.fullname(name, type, domain) => String
+ *   DNSSD::Service.fullname(name, type, domain)
  *
  * Concatenate a three-part domain name like DNSSD::Reply#fullname into a
  * properly-escaped full domain name.
@@ -102,10 +102,10 @@ dnssd_service_s_fullname(VALUE klass, VALUE name, VALUE type, VALUE domain) {
 
 /*
  * call-seq:
- *   service.get_property(property) => result
+ *   service.get_property(property)
  *
  * Binding for DNSServiceGetProperty.  The only property currently supported in
- * DNSSD is DNSSD::Service::DaemonVersion
+ * DNSSD is DaemonVersion
  */
 static VALUE
 dnssd_service_s_get_property(VALUE klass, VALUE property) {
@@ -130,11 +130,7 @@ dnssd_service_s_allocate(VALUE klass) {
   return Data_Wrap_Struct(klass, 0, dnssd_service_free, client);
 }
 
-/*
- * call-seq:
- *    service.started? => true or false
- *
- * Returns true if the service has been started.
+/* Returns true if the service has been started.
  */
 
 static VALUE
@@ -146,11 +142,7 @@ dnssd_service_started_p(VALUE service) {
   return Qtrue;
 }
 
-/*
- * call-seq:
- *    service.stopped? => true or false
- *
- * Returns true if the service has been stopped.
+/* Returns true if the service has been stopped.
  */
 
 static VALUE
@@ -163,11 +155,7 @@ dnssd_service_stopped_p(VALUE service) {
   return Qtrue;
 }
 
-/*
- * call-seq:
- *    service.stop => service
- *
- * Stops the service, closing the underlying socket and killing the underlying
+/* Stops the service, closing the underlying socket and killing the underlying
  * thread.
  *
  * It is good practice to all stop running services before exit.
@@ -236,7 +224,10 @@ dnssd_service_process(VALUE self) {
   return self;
 }
 
-/* Binding to DNSServiceAddRecord
+/* call-seq:
+ *   service._add_record(flags, type, data, ttl)
+ *
+ * Binding to DNSServiceAddRecord
  */
 
 static VALUE
@@ -298,12 +289,15 @@ dnssd_service_browse_reply(DNSServiceRef client, DNSServiceFlags flags,
   dnssd_service_callback(service, reply);
 }
 
-/* Binding to DNSServiceBrowse
+/* call-seq:
+ *   service._browse(flags, interface, type, domain)
+ *
+ * Binding to DNSServiceBrowse
  */
 
 static VALUE
-dnssd_service_browse(VALUE self, VALUE _type, VALUE _domain, VALUE _flags,
-    VALUE _interface) {
+dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
+		VALUE _domain) {
   const char *type;
   const char *domain = NULL;
   DNSServiceFlags flags = 0;
@@ -353,7 +347,10 @@ dnssd_service_enumerate_domains_reply(DNSServiceRef client,
   dnssd_service_callback(service, reply);
 }
 
-/* Binding to DNSServiceEnumerateDomains
+/* call-seq:
+ *   service._enumerate_domains(flags, interface)
+ *
+ * Binding to DNSServiceEnumerateDomains
  */
 
 static VALUE
@@ -402,12 +399,15 @@ dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
   dnssd_service_callback(service, reply);
 }
 
-/* Binding to DNSServiceGetAddrInfo
+/* call-seq:
+ *   service._getaddrinfo(flags, interface, host, protocol)
+ *
+ * Binding to DNSServiceGetAddrInfo
  */
 
 static VALUE
-dnssd_service_getaddrinfo(VALUE self, VALUE _host, VALUE _protocol,
-    VALUE _flags, VALUE _interface) {
+dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
+		VALUE _protocol, VALUE _host) {
   DNSServiceFlags flags = 0;
   uint32_t interface = 0;
   DNSServiceProtocol protocol = 0;
@@ -461,7 +461,10 @@ dnssd_service_query_record_reply(DNSServiceRef client, DNSServiceFlags flags,
   dnssd_service_callback(service, reply);
 }
 
-/* Binding to DNSServiceQueryRecord
+/* call-seq:
+ *   service._query_record(flags, interface, fullname, record_type, record_class)
+ *
+ * Binding to DNSServiceQueryRecord
  */
 
 static VALUE
@@ -512,13 +515,15 @@ dnssd_service_register_reply(DNSServiceRef client, DNSServiceFlags flags,
   dnssd_service_callback(service, reply);
 }
 
-/* Binding to DNSServiceRegister
+/* call-seq:
+ *   service._register(flags, interface, name, type, domain, host, port, text_record)
+ *
+ * Binding to DNSServiceRegister
  */
 
 static VALUE
-dnssd_service_register(VALUE self, VALUE _name, VALUE _type, VALUE _domain,
-    VALUE _host, VALUE _port, VALUE _text_record, VALUE _flags,
-    VALUE _interface) {
+dnssd_service_register(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
+		VALUE _type, VALUE _domain, VALUE _host, VALUE _port, VALUE _text_record) {
   const char *name, *type, *host = NULL, *domain = NULL;
   uint16_t port;
   uint16_t txt_len = 0;
@@ -589,12 +594,15 @@ dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
   dnssd_service_callback(service, reply);
 }
 
-/* Binding to DNSServiceResolve
+/* call-seq:
+ *   service._resolve(flags, interface, name, type, domain)
+ *
+ * Binding to DNSServiceResolve
  */
 
 static VALUE
-dnssd_service_resolve(VALUE self, VALUE _name, VALUE _type, VALUE _domain,
-    VALUE _flags, VALUE _interface) {
+dnssd_service_resolve(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
+		VALUE _type, VALUE _domain) {
   const char *name, *type, *domain;
   DNSServiceFlags flags = 0;
   uint32_t interface = 0;
@@ -639,7 +647,7 @@ Init_DNSSD_Service(void) {
   cDNSSDFlags      = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
   cDNSSDRecord     = rb_define_class_under(mDNSSD, "Record", rb_cObject);
   cDNSSDService    = rb_define_class_under(mDNSSD, "Service", rb_cObject);
-  cDNSSDTextRecord = rb_define_class_under(mDNSSD, "TextRecord", rb_cObject);
+  cDNSSDTextRecord = rb_path2class("DNSSD::TextRecord");
 
   cDNSSDReplyAddrInfo    = rb_path2class("DNSSD::Reply::AddrInfo");
   cDNSSDReplyBrowse      = rb_path2class("DNSSD::Reply::Browse");
@@ -650,18 +658,30 @@ Init_DNSSD_Service(void) {
   
   rb_cSocket = rb_path2class("Socket");
 
+
+  /* Maximum length for a domain name */
   rb_define_const(cDNSSDService, "MAX_DOMAIN_NAME",
       ULONG2NUM(kDNSServiceMaxDomainName));
+
+	/* Maximum length for a service name */
   rb_define_const(cDNSSDService, "MAX_SERVICE_NAME",
       ULONG2NUM(kDNSServiceMaxServiceName));
+
+	/* DaemonVersion property value */
   rb_define_const(cDNSSDService, "DaemonVersion",
       rb_str_new2(kDNSServiceProperty_DaemonVersion));
 
+	/* IPv4 protocol for #getaddrinfo */
   rb_define_const(cDNSSDService, "IPv4", ULONG2NUM(kDNSServiceProtocol_IPv4));
+
+	/* IPv6 protocol for #getaddrinfo */
   rb_define_const(cDNSSDService, "IPv6", ULONG2NUM(kDNSServiceProtocol_IPv6));
 
-  rb_define_const(cDNSSDService, "UDP", ULONG2NUM(kDNSServiceProtocol_UDP));
+	/* TCP protocol for creating NAT port mappings */
   rb_define_const(cDNSSDService, "TCP", ULONG2NUM(kDNSServiceProtocol_TCP));
+
+	/* UDP protocol for creating NAT port mappings */
+  rb_define_const(cDNSSDService, "UDP", ULONG2NUM(kDNSServiceProtocol_UDP));
 
   rb_define_alloc_func(cDNSSDService, dnssd_service_s_allocate);
   rb_define_singleton_method(cDNSSDService, "fullname", dnssd_service_s_fullname, 3);

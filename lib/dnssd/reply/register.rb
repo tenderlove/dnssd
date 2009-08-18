@@ -18,6 +18,9 @@ class DNSSD::Reply::Register < DNSSD::Reply
 
   attr_reader :type
 
+  ##
+  # Creates a Register, called internally by DNSSD::Service#register
+
   def initialize(service, flags, name, type, domain)
     super service, flags, nil
 

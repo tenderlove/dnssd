@@ -193,12 +193,12 @@ require 'dnssd/reply/domain'
 require 'dnssd/reply/query_record'
 require 'dnssd/reply/register'
 require 'dnssd/reply/resolve'
+require 'dnssd/text_record'
 
 # The C extension uses above-defined classes
 require 'dnssd/dnssd'
 
 require 'dnssd/flags'
-require 'dnssd/text_record'
 require 'dnssd/service'
 require 'dnssd/record'
 

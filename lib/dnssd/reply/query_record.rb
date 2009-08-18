@@ -40,6 +40,10 @@ class DNSSD::Reply::QueryRecord < DNSSD::Reply
 
   attr_reader :type
 
+  ##
+  # Creates a new QueryRecord, called internally by
+  # DNSSD::Service#query_record
+
   def initialize(service, flags, interface, fullname, record_type,
                  record_class, record, ttl)
     super service, flags, interface
@@ -113,9 +117,10 @@ class DNSSD::Reply::QueryRecord < DNSSD::Reply
   end
 
   ##
-  # Decoded output for #record
+  # Decodes output for #record, returning the raw record if it can't be
+  # decoded.  Handles:
   #
-  # Supports common resource record types.
+  # A AAAA CNAME MX NS PTR SOA SRV TXT
 
   def record_data
     return @record unless @record_class == DNSSD::Record::IN

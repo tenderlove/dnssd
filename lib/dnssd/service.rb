@@ -30,7 +30,7 @@ class DNSSD::Service
     raise TypeError, 'must be called after register' unless @type == :register
     @records ||= []
 
-    _add_record flags, type, data, ttl
+    _add_record flags.to_i, type, data, ttl
   end
 
   ##
@@ -55,7 +55,7 @@ class DNSSD::Service
 
     @type = :browse
 
-    _browse type, domain, flags.to_i, interface
+    _browse flags.to_i, interface, type, domain
 
     process(&block)
   end
@@ -98,13 +98,22 @@ class DNSSD::Service
     process(&block)
   end
 
+  ##
+  # Retrieve address information for +host+ on +protocol+
+  #
+  #   addresses = []
+  #   service.getaddrinfo reply.target do |addrinfo|
+  #     addresses << addrinfo.address
+  #     break unless addrinfo.flags.more_coming?
+  #   end
+
   def getaddrinfo(host, protocol = 0, flags = 0,
                   interface = DNSSD::InterfaceAny, &block)
     interface = DNSSD.interface_index interface unless Integer === interface
 
     raise DNSSD::Error, 'service in progress' if started?
 
-    _getaddrinfo host, protocol, flags.to_i, interface
+    _getaddrinfo flags.to_i, interface, protocol, host
 
     @type = :getaddrinfo
 
@@ -116,7 +125,10 @@ class DNSSD::Service
     "#<%s:0x%x %s>" % [self.class, object_id, stopped]
   end
 
-  def process
+  ##
+  # Yields results from the mDNS daemon, blocking until data is available.
+
+  def process # :yields: DNSSD::Result
     @thread = Thread.current
 
     while @continue do
@@ -176,8 +188,8 @@ class DNSSD::Service
 
     raise DNSSD::Error, 'service in progress' if started?
 
-    _register name, type, domain, host, port, text_record, flags.to_i,
-              interface, &block
+    _register flags.to_i, interface, name, type, domain, host, port,
+              text_record, &block
 
     @type = :register
 
@@ -211,7 +223,7 @@ class DNSSD::Service
 
     raise DNSSD::Error, 'service in progress' if started?
 
-    _resolve name, type, domain, flags.to_i, interface
+    _resolve flags.to_i, interface, name, type, domain
 
     @type = :resolve
 
