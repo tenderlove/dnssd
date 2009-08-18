@@ -43,8 +43,10 @@ Init_DNSSD_Record(void) {
   /* IPv6 Address. */
   rb_define_const(cDNSSDRecord, "AAAA", UINT2NUM(kDNSServiceType_AAAA));
 
+#ifdef kDNSServiceType_APL
   /* Address Prefix List */
   rb_define_const(cDNSSDRecord, "APL", UINT2NUM(kDNSServiceType_APL));
+#endif
 
   /* AFS cell database. */
   rb_define_const(cDNSSDRecord, "AFSDB", UINT2NUM(kDNSServiceType_AFSDB));
@@ -61,17 +63,23 @@ Init_DNSSD_Record(void) {
   /* Canonical name. */
   rb_define_const(cDNSSDRecord, "CNAME", UINT2NUM(kDNSServiceType_CNAME));
 
+#ifdef kDNSServiceType_DHCID
   /* DHCID */
   rb_define_const(cDNSSDRecord, "DHCID", UINT2NUM(kDNSServiceType_DHCID));
+#endif
 
   /* Non-terminal DNAME (for IPv6) */
   rb_define_const(cDNSSDRecord, "DNAME", UINT2NUM(kDNSServiceType_DNAME));
 
+#ifdef kDNSServiceType_DNSKEY
   /* DNSKEY */
   rb_define_const(cDNSSDRecord, "DNSKEY", UINT2NUM(kDNSServiceType_DNSKEY));
+#endif
 
+#ifdef kDNSServiceType_DS
   /* Delegation Signer */
   rb_define_const(cDNSSDRecord, "DS", UINT2NUM(kDNSServiceType_DS));
+#endif
 
   /* Endpoint identifier. */
   rb_define_const(cDNSSDRecord, "EID", UINT2NUM(kDNSServiceType_EID));
@@ -82,8 +90,10 @@ Init_DNSSD_Record(void) {
   /* Host information. */
   rb_define_const(cDNSSDRecord, "HINFO", UINT2NUM(kDNSServiceType_HINFO));
 
+#ifdef kDNSServiceType_IPSECKEY
   /* IPSECKEY */
   rb_define_const(cDNSSDRecord, "IPSECKEY", UINT2NUM(kDNSServiceType_IPSECKEY));
+#endif
 
   /* ISDN calling address. */
   rb_define_const(cDNSSDRecord, "ISDN", UINT2NUM(kDNSServiceType_ISDN));
@@ -142,8 +152,10 @@ Init_DNSSD_Record(void) {
   /* Reverse NSAP lookup (deprecated). */
   rb_define_const(cDNSSDRecord, "NSAP_PTR", UINT2NUM(kDNSServiceType_NSAP_PTR));
 
+#ifdef kDNSServiceType_NSEC
   /* NSEC */
   rb_define_const(cDNSSDRecord, "NSEC", UINT2NUM(kDNSServiceType_NSEC));
+#endif
 
   /* Null resource record. */
   rb_define_const(cDNSSDRecord, "NULL", UINT2NUM(kDNSServiceType_NULL));
@@ -163,8 +175,10 @@ Init_DNSSD_Record(void) {
   /* Responsible person. */
   rb_define_const(cDNSSDRecord, "RP", UINT2NUM(kDNSServiceType_RP));
 
+#ifdef kDNSServiceType_RRSIG
   /* RRSIG */
   rb_define_const(cDNSSDRecord, "RRSIG", UINT2NUM(kDNSServiceType_RRSIG));
+#endif
 
   /* Router. */
   rb_define_const(cDNSSDRecord, "RT", UINT2NUM(kDNSServiceType_RT));
@@ -181,8 +195,10 @@ Init_DNSSD_Record(void) {
   /* Server Selection. */
   rb_define_const(cDNSSDRecord, "SRV", UINT2NUM(kDNSServiceType_SRV));
 
+#ifdef kDNSServiceType_SSHFP
   /* SSH Key Fingerprint */
   rb_define_const(cDNSSDRecord, "SSHFP", UINT2NUM(kDNSServiceType_SSHFP));
+#endif
 
   /* Transaction key */
   rb_define_const(cDNSSDRecord, "TKEY", UINT2NUM(kDNSServiceType_TKEY));

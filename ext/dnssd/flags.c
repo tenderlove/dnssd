@@ -1,31 +1,24 @@
 #include "dnssd.h"
 
 /* dnssd flags, flag IDs, flag names */
-#define DNSSD_MAX_FLAGS 13
+#define DNSSD_MAX_FLAGS 15
 
 static const DNSServiceFlags dnssd_flag[DNSSD_MAX_FLAGS] = {
   kDNSServiceFlagsMoreComing,
-
   kDNSServiceFlagsAdd,
   kDNSServiceFlagsDefault,
-
   kDNSServiceFlagsNoAutoRename,
-
   kDNSServiceFlagsShared,
   kDNSServiceFlagsUnique,
-
   kDNSServiceFlagsBrowseDomains,
   kDNSServiceFlagsRegistrationDomains,
-
   kDNSServiceFlagsLongLivedQuery,
-
   kDNSServiceFlagsAllowRemoteQuery,
-
   kDNSServiceFlagsForceMulticast,
-
   kDNSServiceFlagsForce,
-
-  kDNSServiceFlagsReturnIntermediates
+  kDNSServiceFlagsReturnIntermediates,
+  kDNSServiceFlagsNonBrowsable,
+  kDNSServiceFlagsShareConnection
 };
 
 static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
@@ -41,7 +34,9 @@ static const char *dnssd_flag_name[DNSSD_MAX_FLAGS] = {
   "allow_remote_query",
   "force_multicast",
   "force",
-  "return_intermediates"
+  "return_intermediates",
+  "non_browsable",
+  "share_connection"
 };
 
 void
@@ -54,7 +49,7 @@ Init_DNSSD_Flags(void) {
   cDNSSDFlags = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
 
   /* flag constants */
-#if DNSSD_MAX_FLAGS != 13
+#if DNSSD_MAX_FLAGS != 15
 #error The code below needs to be updated.
 #endif
 
@@ -95,6 +90,24 @@ Init_DNSSD_Flags(void) {
    */
   rb_define_const(cDNSSDFlags, "NoAutoRename",
       ULONG2NUM(kDNSServiceFlagsNoAutoRename));
+
+#ifdef kDNSServiceFlagsShareConnection
+  /* For efficiency, clients that perform many concurrent operations may want
+   * to use a single Unix Domain Socket connection with the background daemon,
+   * instead of having a separate connection for each independent operation. To
+   * use this mode, clients first call DNSServiceCreateConnection(&MainRef) to
+   * initialize the main DNSServiceRef.  For each subsequent operation that is
+   * to share that same connection, the client copies the MainRef, and then
+   * passes the address of that copy, setting the ShareConnection flag to tell
+   * the library that this DNSServiceRef is not a typical uninitialized
+   * DNSServiceRef; it's a copy of an existing DNSServiceRef whose connection
+   * information should be reused.
+   *
+   * NOTE: Not currently supported
+   */
+  rb_define_const(cDNSSDFlags, "ShareConnection",
+      ULONG2NUM(kDNSServiceFlagsShareConnection));
+#endif
 
   /* Flag for registering individual records on a connected DNSSD::Service.
    *
@@ -148,6 +161,7 @@ Init_DNSSD_Flags(void) {
   rb_define_const(cDNSSDFlags, "ForceMulticast",
       ULONG2NUM(kDNSServiceFlagsForceMulticast));
 
+#ifdef HAVE_KDNSSERVICEFLAGSFORCE
   /* Flag for signifying a "stronger" variant of an operation. Currently
    * defined only for DNSSD.reconfirm_record, where it forces a record to
    * be removed from the cache immediately, instead of querying for a few
@@ -158,7 +172,21 @@ Init_DNSSD_Flags(void) {
    * instance will disappear, and then re-appear moments later.
    */
   rb_define_const(cDNSSDFlags, "Force", ULONG2NUM(kDNSServiceFlagsForce));
+#endif
 
+#ifdef HAVE_KDNSSERVICEFLAGSNONBROWSABLE
+  /* A service registered with the NonBrowsable flag set can be resolved using
+   * DNSServiceResolve(), but will not be discoverable using
+   * DNSServiceBrowse().  This is for cases where the name is actually a GUID;
+   * it is found by other means; there is no end-user benefit to browsing to
+   * find a long list of opaque GUIDs.  Using the NonBrowsable flag creates
+   * SRV+TXT without the cost of also advertising an associated PTR record.
+   */
+  rb_define_const(cDNSSDFlags, "NonBrowsable",
+      ULONG2NUM(kDNSServiceFlagsNonBrowsable));
+#endif
+
+#ifdef HAVE_KDNSSERVICEFLAGSRETURNINTERMEDIATES
   /* Flag for returning intermediate results. For example, if a query results
    * in an authoritative NXDomain (name does not exist) then that result is
    * returned to the client. However the query is not implicitly cancelled --
@@ -172,6 +200,12 @@ Init_DNSSD_Flags(void) {
    */
   rb_define_const(cDNSSDFlags, "ReturnIntermediates",
       ULONG2NUM(kDNSServiceFlagsReturnIntermediates));
+#endif
+
+#ifdef HAVE_KDNSSERVICEFLAGSSHARECONNECTION
+  rb_define_const(cDNSSDFlags, "ShareConnection",
+      ULONG2NUM(kDNSServiceFlagsShareConnection));
+#endif
 
   flags_hash = rb_hash_new();
 

@@ -27,9 +27,9 @@ static ID dnssd_iv_type;
   do {\
     Check_Type(obj, T_DATA);\
     if (rb_obj_is_kind_of(obj, klass) != Qtrue)\
-      rb_raise(rb_eTypeError,\
-          "wrong argument type %s",\
-          rb_class2name(CLASS_OF(obj)));\
+    rb_raise(rb_eTypeError,\
+        "wrong argument type %s",\
+        rb_class2name(CLASS_OF(obj)));\
     Data_Get_Struct(obj, type, var);\
   } while (0)
 
@@ -100,6 +100,7 @@ dnssd_service_s_fullname(VALUE klass, VALUE name, VALUE type, VALUE domain) {
       StringValueCStr(domain));
 }
 
+#ifdef HAVE_DNSSERVICEGETPROPERTY
 /*
  * call-seq:
  *   service.get_property(property)
@@ -120,6 +121,7 @@ dnssd_service_s_get_property(VALUE klass, VALUE property) {
   /* as of this writing only a uint32_t will be returned */
   return ULONG2NUM(result);
 }
+#endif
 
 static VALUE
 dnssd_service_s_allocate(VALUE klass) {
@@ -297,7 +299,7 @@ dnssd_service_browse_reply(DNSServiceRef client, DNSServiceFlags flags,
 
 static VALUE
 dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
-		VALUE _domain) {
+    VALUE _domain) {
   const char *type;
   const char *domain = NULL;
   DNSServiceFlags flags = 0;
@@ -407,7 +409,7 @@ dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
 
 static VALUE
 dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
-		VALUE _protocol, VALUE _host) {
+    VALUE _protocol, VALUE _host) {
   DNSServiceFlags flags = 0;
   uint32_t interface = 0;
   DNSServiceProtocol protocol = 0;
@@ -483,7 +485,7 @@ dnssd_service_query_record(VALUE self, VALUE _flags, VALUE _interface,
   fullname = StringValueCStr(_fullname);
   rrtype = NUM2UINT(_rrtype);
   rrclass = NUM2UINT(_rrclass);
-  
+
   get(cDNSSDService, self, DNSServiceRef, client);
 
   e = DNSServiceQueryRecord(client, flags, interface, fullname, rrtype,
@@ -509,7 +511,7 @@ dnssd_service_register_reply(DNSServiceRef client, DNSServiceFlags flags,
   argv[2] = rb_str_new2(name);
   argv[3] = rb_str_new2(type);
   argv[4] = rb_str_new2(domain);
-  
+
   reply = rb_class_new_instance(5, argv, cDNSSDReplyRegister);
 
   dnssd_service_callback(service, reply);
@@ -523,7 +525,7 @@ dnssd_service_register_reply(DNSServiceRef client, DNSServiceFlags flags,
 
 static VALUE
 dnssd_service_register(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
-		VALUE _type, VALUE _domain, VALUE _host, VALUE _port, VALUE _text_record) {
+    VALUE _type, VALUE _domain, VALUE _host, VALUE _port, VALUE _text_record) {
   const char *name, *type, *host = NULL, *domain = NULL;
   uint16_t port;
   uint16_t txt_len = 0;
@@ -588,7 +590,7 @@ dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
   argv[4] = rb_str_new2(target);
   argv[5] = UINT2NUM(ntohs(port));
   argv[6] = rb_str_new((char *)txt_rec, txt_len);
-  
+
   reply = rb_class_new_instance(7, argv, cDNSSDReplyResolve);
 
   dnssd_service_callback(service, reply);
@@ -602,7 +604,7 @@ dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
 
 static VALUE
 dnssd_service_resolve(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
-		VALUE _type, VALUE _domain) {
+    VALUE _type, VALUE _domain) {
   const char *name, *type, *domain;
   DNSServiceFlags flags = 0;
   uint32_t interface = 0;
@@ -655,7 +657,7 @@ Init_DNSSD_Service(void) {
   cDNSSDReplyQueryRecord = rb_path2class("DNSSD::Reply::QueryRecord");
   cDNSSDReplyRegister    = rb_path2class("DNSSD::Reply::Register");
   cDNSSDReplyResolve     = rb_path2class("DNSSD::Reply::Resolve");
-  
+
   rb_cSocket = rb_path2class("Socket");
 
 
@@ -663,30 +665,40 @@ Init_DNSSD_Service(void) {
   rb_define_const(cDNSSDService, "MAX_DOMAIN_NAME",
       ULONG2NUM(kDNSServiceMaxDomainName));
 
-	/* Maximum length for a service name */
+  /* Maximum length for a service name */
   rb_define_const(cDNSSDService, "MAX_SERVICE_NAME",
       ULONG2NUM(kDNSServiceMaxServiceName));
 
-	/* DaemonVersion property value */
+  /* DaemonVersion property value */
   rb_define_const(cDNSSDService, "DaemonVersion",
       rb_str_new2(kDNSServiceProperty_DaemonVersion));
 
-	/* IPv4 protocol for #getaddrinfo */
+#ifdef kDNSServiceProtocol_IPv4
+  /* IPv4 protocol for #getaddrinfo */
   rb_define_const(cDNSSDService, "IPv4", ULONG2NUM(kDNSServiceProtocol_IPv4));
+#endif
 
-	/* IPv6 protocol for #getaddrinfo */
+#ifdef kDNSServiceProtocol_IPv6
+  /* IPv6 protocol for #getaddrinfo */
   rb_define_const(cDNSSDService, "IPv6", ULONG2NUM(kDNSServiceProtocol_IPv6));
+#endif
 
-	/* TCP protocol for creating NAT port mappings */
+#ifdef kDNSServiceProtocol_TCP
+  /* TCP protocol for creating NAT port mappings */
   rb_define_const(cDNSSDService, "TCP", ULONG2NUM(kDNSServiceProtocol_TCP));
+#endif
 
-	/* UDP protocol for creating NAT port mappings */
+#ifdef kDNSServiceProtocol_UDP
+  /* UDP protocol for creating NAT port mappings */
   rb_define_const(cDNSSDService, "UDP", ULONG2NUM(kDNSServiceProtocol_UDP));
+#endif
 
   rb_define_alloc_func(cDNSSDService, dnssd_service_s_allocate);
   rb_define_singleton_method(cDNSSDService, "fullname", dnssd_service_s_fullname, 3);
 
+#ifdef HAVE_DNSSERVICEGETPROPERTY
   rb_define_singleton_method(cDNSSDService, "get_property", dnssd_service_s_get_property, 1);
+#endif
 
   rb_define_method(cDNSSDService, "started?", dnssd_service_started_p, 0);
 

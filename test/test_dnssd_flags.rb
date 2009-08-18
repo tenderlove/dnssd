@@ -74,8 +74,10 @@ class TestDNSSDFlags < MiniTest::Unit::TestCase
                                 DNSSD::Flags::LongLivedQuery,
                                 DNSSD::Flags::MoreComing,
                                 DNSSD::Flags::NoAutoRename,
+                                DNSSD::Flags::NonBrowsable,
                                 DNSSD::Flags::RegistrationDomains,
                                 DNSSD::Flags::ReturnIntermediates,
+                                DNSSD::Flags::ShareConnection,
                                 DNSSD::Flags::Shared,
                                 DNSSD::Flags::Unique)
 

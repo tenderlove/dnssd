@@ -47,5 +47,14 @@ abort('unable to find struct sockaddr_in')
 have_struct_member 'struct sockaddr_in', 'sin_len', 'netinet/in.h'
 # otherwise, use sizeof()
 
+# avahi 0.6.25 is missing this function
+have_func 'DNSServiceGetProperty', 'dns_sd.h'
+
+# avahi 0.6.25 is missing these flags
+have_func 'kDNSServiceFlagsForce', 'dns_sd.h'
+have_func 'kDNSServiceFlagsNonBrowsable', 'dns_sd.h'
+have_func 'kDNSServiceFlagsReturnIntermediates', 'dns_sd.h'
+have_func 'kDNSServiceFlagsShareConnection', 'dns_sd.h'
+
 create_makefile 'dnssd'
 

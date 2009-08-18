@@ -111,21 +111,33 @@ Init_DNSSD_Errors(void) {
   error_class = rb_define_class_under(mDNSSD, "BadTimeError", eDNSSDError);
   dnssd_errors_store(error_class, kDNSServiceErr_BadTime);
 
+#ifdef kDNSServiceErr_BadSig
   error_class = rb_define_class_under(mDNSSD, "BadSigError", eDNSSDError);
   dnssd_errors_store(error_class, kDNSServiceErr_BadSig);
+#endif
 
+#ifdef kDNSServiceErr_BadKey
   error_class = rb_define_class_under(mDNSSD, "BadKeyError", eDNSSDError);
   dnssd_errors_store(error_class, kDNSServiceErr_BadKey);
+#endif
 
+#ifdef kDNSServiceErr_Transient
   error_class = rb_define_class_under(mDNSSD, "TransientError", eDNSSDError);
   dnssd_errors_store(error_class, kDNSServiceErr_Transient);
+#endif
 
+#ifdef kDNSServiceErr_ServiceNotRunning
   error_class = rb_define_class_under(mDNSSD, "ServiceNotRunningError", eDNSSDError);
   dnssd_errors_store(error_class, kDNSServiceErr_ServiceNotRunning);
+#endif
 
+#ifdef kDNSServiceErr_NATPortMappingUnsupported
   error_class = rb_define_class_under(mDNSSD, "NATPortMappingUnsupported", eDNSSDError);
   dnssd_errors_store(error_class, kDNSServiceErr_NATPortMappingUnsupported);
+#endif
 
+#ifdef kDNSServiceErr_NATPortMappingDisabled
   error_class = rb_define_class_under(mDNSSD, "NATPortMappingDisabled", eDNSSDError);
   dnssd_errors_store(error_class, kDNSServiceErr_NATPortMappingDisabled);
+#endif
 }

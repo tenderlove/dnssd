@@ -83,9 +83,11 @@ Init_dnssd(void) {
   rb_define_const(mDNSSD, "InterfaceLocalOnly",
       ULONG2NUM(kDNSServiceInterfaceIndexLocalOnly));
 
+#ifdef kDNSServiceInterfaceIndexUnicast
   /* Unicast interfaces */
   rb_define_const(mDNSSD, "InterfaceUnicast",
       ULONG2NUM(kDNSServiceInterfaceIndexUnicast));
+#endif
 
   rb_define_singleton_method(mDNSSD, "getservbyport", dnssd_getservbyport, -1);
 
