@@ -34,7 +34,9 @@ class DNSSD::Reply
   # The full service domain name, see DNSS::Service#fullname
 
   def fullname
-    DNSSD::Service.fullname @name.gsub("\032", ' '), @type, @domain
+    fullname = DNSSD::Service.fullname @name.gsub("\032", ' '), @type, @domain
+    fullname << '.' unless fullname =~ /\.$/
+    fullname
   end
 
   def inspect # :nodoc:
