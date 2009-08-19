@@ -23,7 +23,7 @@ HOE = Hoe.spec 'dnssd' do
 
   extra_dev_deps << ['hoe-seattlerb', '~> 1.2']
   extra_dev_deps << ['minitest', '~> 1.4']
-  extra_dev_deps << ['rake-complier', '~> 0.6']
+  extra_dev_deps << ['rake-compiler', '~> 0.6']
 end
 
 require 'rake/extensiontask'
