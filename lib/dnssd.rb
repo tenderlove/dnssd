@@ -195,6 +195,10 @@ require 'dnssd/reply/register'
 require 'dnssd/reply/resolve'
 require 'dnssd/text_record'
 
+# Suppress avahi compatibilty warning
+# http://0pointer.de/avahi-compat?s=libdns_sd&e=ruby
+ENV['AVAHI_COMPAT_NOWARN'] = '1'
+
 # The C extension uses above-defined classes
 require 'dnssd/dnssd'
 
