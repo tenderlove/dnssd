@@ -7,7 +7,8 @@
 == DESCRIPTION:
 
 DNS Service Discovery (aka Bonjour, MDNS) API for Ruby.  Implements browsing,
-resolving, registration and domain enumeration.
+resolving, registration and domain enumeration.  Supports avahi's DNSSD
+compatibility layer for avahi 0.6.25 or newer.
 
 == FEATURES/PROBLEMS:
 
@@ -36,7 +37,8 @@ Browsing services:
 == REQUIREMENTS:
 
 * OS X
-* The dns-sd library on other operating systems (or dns-sd shim)
+* The dns-sd library on other operating systems
+* avahi 0.6.25+
 
 == INSTALL:
 

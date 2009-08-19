@@ -8,8 +8,10 @@ require 'thread'
 
 class DNSSD::Service
 
+  # :stopdoc:
   IPv4 = 1 unless const_defined? :IPv4
   IPv6 = 2 unless const_defined? :IPv6
+  # :startdoc:
 
   ##
   # Creates a new DNSSD::Service
