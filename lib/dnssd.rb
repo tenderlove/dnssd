@@ -10,6 +10,11 @@
 
 module DNSSD
 
+  # :stopdoc:
+  class ServiceNotRunningError < UnknownError; end unless
+    const_defined? :ServiceNotRunningError
+  # :startdoc:
+
   ##
   # The version of DNSSD you're using.
 
