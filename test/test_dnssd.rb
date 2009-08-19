@@ -61,14 +61,16 @@ class TestDNSSD < MiniTest::Unit::TestCase
   end
 
   def test_class_interface_index
-    index = DNSSD.interface_index('lo0')
-    refute_equal 0, index, 'what? no lo0?'
+    index = DNSSD.interface_index 'lo0'
+    index = DNSSD.interface_index 'lo' if index.zero?
+    refute_equal 0, index, 'what? no lo0? no lo?'
   end
 
   def test_class_interface_name
-    index = DNSSD.interface_index('lo0')
+    index = DNSSD.interface_index 'lo0'
+    index = DNSSD.interface_index 'lo' if index.zero?
 
-    assert_equal 'lo0', DNSSD.interface_name(index)
+    assert_match %r%^lo0?$%, DNSSD.interface_name(index)
   end
 
 end

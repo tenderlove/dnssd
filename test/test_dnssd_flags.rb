@@ -65,23 +65,7 @@ class TestDNSSDFlags < MiniTest::Unit::TestCase
   def test_complement
     new_flags = ~@flags
 
-    expected = DNSSD::Flags.new(DNSSD::Flags::Add,
-                                DNSSD::Flags::AllowRemoteQuery,
-                                DNSSD::Flags::BrowseDomains,
-                                DNSSD::Flags::Default,
-                                DNSSD::Flags::Force,
-                                DNSSD::Flags::ForceMulticast,
-                                DNSSD::Flags::LongLivedQuery,
-                                DNSSD::Flags::MoreComing,
-                                DNSSD::Flags::NoAutoRename,
-                                DNSSD::Flags::NonBrowsable,
-                                DNSSD::Flags::RegistrationDomains,
-                                DNSSD::Flags::ReturnIntermediates,
-                                DNSSD::Flags::ShareConnection,
-                                DNSSD::Flags::Shared,
-                                DNSSD::Flags::Unique)
-
-    assert_equal expected, new_flags
+    assert_equal DNSSD::Flags.new(*DNSSD::Flags::ALL_FLAGS), new_flags
   end
 
   def test_equals
