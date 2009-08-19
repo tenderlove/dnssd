@@ -132,24 +132,14 @@ dnssd_service_s_allocate(VALUE klass) {
   return Data_Wrap_Struct(klass, 0, dnssd_service_free, client);
 }
 
-/* Returns true if the service has been started.
- */
-
-static VALUE
-dnssd_service_started_p(VALUE service) {
-  DNSServiceRef *client = (DNSServiceRef*)RDATA(service)->data;
-  if (client)
-    return (*client) == NULL ? Qfalse : Qtrue;
-
-  return Qtrue;
-}
-
 /* Returns true if the service has been stopped.
  */
 
 static VALUE
-dnssd_service_stopped_p(VALUE service) {
-  DNSServiceRef *client = (DNSServiceRef*)RDATA(service)->data;
+dnssd_service_stopped_p(VALUE self) {
+  DNSServiceRef *client;
+
+  get(cDNSSDService, self, DNSServiceRef, client);
 
   if (client)
     return (*client) == NULL ? Qtrue : Qfalse;
@@ -172,9 +162,10 @@ dnssd_service_stopped_p(VALUE service) {
 static VALUE
 dnssd_service_stop(VALUE self) {
   VALUE thread;
-  DNSServiceRef *client = (DNSServiceRef*)RDATA(self)->data;
+  DNSServiceRef *client;
 
-  /* set to null right away for a bit more thread safety */
+  get(cDNSSDService, self, DNSServiceRef, client);
+
   RDATA(self)->data = NULL;
 
   if (client == NULL)
@@ -699,8 +690,6 @@ Init_DNSSD_Service(void) {
 #ifdef HAVE_DNSSERVICEGETPROPERTY
   rb_define_singleton_method(cDNSSDService, "get_property", dnssd_service_s_get_property, 1);
 #endif
-
-  rb_define_method(cDNSSDService, "started?", dnssd_service_started_p, 0);
 
   rb_define_method(cDNSSDService, "stop", dnssd_service_stop, 0);
   rb_define_method(cDNSSDService, "stopped?", dnssd_service_stopped_p, 0);

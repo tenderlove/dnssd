@@ -252,5 +252,12 @@ class DNSSD::Service
     process(&block)
   end
 
+  ##
+  # Returns true if the service has been started.
+
+  def started?
+    not stopped?
+  end
+
 end
 
