@@ -15,6 +15,7 @@
 
 * N bug fixes
   * Fix hierarchical domains like <tt>\.mac\.name.members.mac.com.</tt>
+  * Fix compilation against avahi 0.6.25
 
 === 1.2 / 2009-08-11
 
