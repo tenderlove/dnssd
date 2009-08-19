@@ -10,11 +10,6 @@
 
 module DNSSD
 
-  # :stopdoc:
-  class ServiceNotRunningError < UnknownError; end unless
-    const_defined? :ServiceNotRunningError
-  # :startdoc:
-
   ##
   # The version of DNSSD you're using.
 
@@ -206,6 +201,13 @@ ENV['AVAHI_COMPAT_NOWARN'] = '1'
 
 # The C extension uses above-defined classes
 require 'dnssd/dnssd'
+
+module DNSSD
+  # :stopdoc:
+  class ServiceNotRunningError < UnknownError; end unless
+    const_defined? :ServiceNotRunningError
+  # :startdoc:
+end
 
 require 'dnssd/flags'
 require 'dnssd/service'

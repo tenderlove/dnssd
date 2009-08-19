@@ -59,5 +59,8 @@ have_func 'kDNSServiceFlagsNonBrowsable', 'dns_sd.h'
 have_func 'kDNSServiceFlagsReturnIntermediates', 'dns_sd.h'
 have_func 'kDNSServiceFlagsShareConnection', 'dns_sd.h'
 
+# avahi 0.6.25 is missing errors after BadTime
+have_func 'kDNSServiceErr_BadSig', 'dns_sd.h'
+
 create_makefile 'dnssd'
 
