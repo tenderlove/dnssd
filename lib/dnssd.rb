@@ -206,6 +206,8 @@ module DNSSD
   # :stopdoc:
   class ServiceNotRunningError < UnknownError; end unless
     const_defined? :ServiceNotRunningError
+
+  InterfaceUnicast = 4294967294 unless const_defined? :InterfaceUnicast # -2
   # :startdoc:
 end
 
