@@ -677,22 +677,18 @@ Init_DNSSD_Service(void) {
       rb_str_new2(kDNSServiceProperty_DaemonVersion));
 #endif
 
-#ifdef kDNSServiceProtocol_IPv4
+#ifdef HAVE_DNSSERVICEGETPROPERTY
   /* IPv4 protocol for #getaddrinfo */
   rb_define_const(cDNSSDService, "IPv4", ULONG2NUM(kDNSServiceProtocol_IPv4));
-#endif
 
-#ifdef kDNSServiceProtocol_IPv6
   /* IPv6 protocol for #getaddrinfo */
   rb_define_const(cDNSSDService, "IPv6", ULONG2NUM(kDNSServiceProtocol_IPv6));
-#endif
 
-#ifdef kDNSServiceProtocol_TCP
+  /* HACK the below are only used by NAT, fix with proper HAVE_ */
+
   /* TCP protocol for creating NAT port mappings */
   rb_define_const(cDNSSDService, "TCP", ULONG2NUM(kDNSServiceProtocol_TCP));
-#endif
 
-#ifdef kDNSServiceProtocol_UDP
   /* UDP protocol for creating NAT port mappings */
   rb_define_const(cDNSSDService, "UDP", ULONG2NUM(kDNSServiceProtocol_UDP));
 #endif

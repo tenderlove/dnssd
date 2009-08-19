@@ -57,8 +57,8 @@ class DNSSD::Reply::Resolve < DNSSD::Reply
 
   def connect(family = Socket::AF_UNSPEC, addrinfo_flags = 0)
     addrinfo_protocol = case family
-                        when Socket::AF_INET then DNSSD::Service::IPv4
-                        when Socket::AF_INET6 then DNSSD::Service::IPv6
+                        when Socket::AF_INET   then DNSSD::Service::IPv4
+                        when Socket::AF_INET6  then DNSSD::Service::IPv6
                         when Socket::AF_UNSPEC then 0
                         else raise ArgumentError, "invalid family #{family}"
                         end

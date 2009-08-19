@@ -8,6 +8,9 @@ require 'thread'
 
 class DNSSD::Service
 
+  IPv4 = 1 unless const_defined? :IPv4
+  IPv6 = 2 unless const_defined? :IPv6
+
   ##
   # Creates a new DNSSD::Service
 
@@ -107,7 +110,7 @@ class DNSSD::Service
   #     break unless addrinfo.flags.more_coming?
   #   end
 
-  def getaddrinfo(host, protocol = 0, flags = 0,
+  def getaddrinfo(host, protocol = nil, flags = 0,
                   interface = DNSSD::InterfaceAny, &block)
     interface = DNSSD.interface_index interface unless Integer === interface
 
@@ -121,9 +124,9 @@ class DNSSD::Service
       process(&block)
     else
       family = case protocol
-               when 0   then nil
                when IPv4 then Socket::AF_INET
                when IPv6 then Socket::AF_INET6
+               else protocol
                end
 
       addrinfo = Socket.getaddrinfo host, nil, family
