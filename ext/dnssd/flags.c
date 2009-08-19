@@ -18,7 +18,7 @@ static const DNSServiceFlags dnssd_flag[DNSSD_MAX_FLAGS] = {
 #ifdef HAVE_KDNSSERVICEFLAGSFORCE
 , kDNSServiceFlagsForce
 #else
-, (DNSSServiceFlags)NULL
+, (DNSServiceFlags)NULL
 #endif
 
 #ifdef HAVE_KDNSSERVICEFLAGSRETURNINTERMEDIATES
@@ -30,13 +30,13 @@ static const DNSServiceFlags dnssd_flag[DNSSD_MAX_FLAGS] = {
 #ifdef HAVE_KDNSSERVICEFLAGSNONBROWSABLE
 , kDNSServiceFlagsNonBrowsable
 #else
-, (DNSSServiceFlags)NULL
+, (DNSServiceFlags)NULL
 #endif
 
 #ifdef HAVE_KDNSSERVICEFLAGSSHARECONNECTION
 , kDNSServiceFlagsShareConnection
 #else
-, (DNSSServiceFlags)NULL
+, (DNSServiceFlags)NULL
 #endif
 };
 
