@@ -109,6 +109,10 @@ class DNSSD::Service
   #     addresses << addrinfo.address
   #     break unless addrinfo.flags.more_coming?
   #   end
+  #
+  # When using DNSSD on top of the Avahi compatibilty shim you'll need to
+  # setup your /etc/nsswitch.conf correctly.  See
+  # http://avahi.org/wiki/AvahiAndUnicastDotLocal for details
 
   def getaddrinfo(host, protocol = nil, flags = 0,
                   interface = DNSSD::InterfaceAny, &block)
