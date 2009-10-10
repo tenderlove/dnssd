@@ -82,7 +82,7 @@ class DNSSD::Reply
   # Sets #name, #type and #domain from +fullname+
 
   def set_fullname(fullname)
-    fullname = fullname.gsub(/\\([0-9]+)/) do $1.to_i.chr end
+    fullname = fullname.gsub(/\\([0-9]{1,3})/) do $1.to_i.chr end
     fullname = fullname.scan(/(?:[^\\.]|\\\.)+/).map do |part|
       part.gsub "\\.", '.'
     end

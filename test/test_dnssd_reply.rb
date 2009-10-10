@@ -51,6 +51,9 @@ class TestDNSSDReply < MiniTest::Unit::TestCase
     assert_equal "Dr. Pepper", @reply.instance_variable_get(:@name)
     assert_equal '_http._tcp',    @reply.instance_variable_get(:@type)
     assert_equal 'local.',        @reply.instance_variable_get(:@domain)
+
+    @reply.set_fullname "Dr\\.\\032Pepper\\032\\0352._http._tcp.local."
+    assert_equal "Dr. Pepper #2", @reply.instance_variable_get(:@name)
   end
 
   def test_set_names
