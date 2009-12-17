@@ -137,9 +137,9 @@ class DNSSD::Service
 
       addrinfo = Socket.getaddrinfo host, nil, family
 
-      addrinfo.each do |_, _, host, ip, _|
+      addrinfo.each do |_, _, a_host, ip, _|
         sockaddr = Socket.pack_sockaddr_in 0, ip
-        @replies << DNSSD::Reply::AddrInfo.new(self, 0, 0, host, sockaddr, 0)
+        @replies << DNSSD::Reply::AddrInfo.new(self, 0, 0, a_host, sockaddr, 0)
       end
     end
   end

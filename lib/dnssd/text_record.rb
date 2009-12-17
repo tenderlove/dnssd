@@ -32,14 +32,16 @@ class DNSSD::TextRecord < DelegateClass(Hash)
   def decode(text_record)
     record = {}
 
-    until text_record.empty? do
-      size = text_record.slice! 0
+    tr = text_record.unpack 'C*'
+
+    until tr.empty? do
+      size  = tr.shift
+
       next if size.zero?
 
-      raise ArgumentError, 'ran out of data in text record' if
-        text_record.length < size
+      raise ArgumentError, 'ran out of data in text record' if tr.length < size
 
-      entry = text_record.slice! 0, size
+      entry = tr.shift(size).pack('C*')
 
       raise ArgumentError, 'key not found' unless entry =~ /^[^=]/
 
