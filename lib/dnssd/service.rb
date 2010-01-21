@@ -116,7 +116,7 @@ class DNSSD::Service
   # setup your /etc/nsswitch.conf correctly.  See
   # http://avahi.org/wiki/AvahiAndUnicastDotLocal for details
 
-  def getaddrinfo(host, protocol = nil, flags = 0,
+  def getaddrinfo(host, protocol = 0, flags = 0,
                   interface = DNSSD::InterfaceAny, &block)
     interface = DNSSD.interface_index interface unless Integer === interface
 
