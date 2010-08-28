@@ -33,7 +33,7 @@ if have_header 'iphlpapi.h' then
   have_func('if_nametoindex', %w[iphlpapi.h netioapi.h]) ||
   abort('unable to find if_indextoname or if_nametoindex')
 else
-  if platform =~ /solaris/ then
+  if RUBY_PLATFORM =~ /solaris/ then
     have_library('xnet') ||
       abort('unable to find xnet library for if_indextoname/if_nametoindex')
 
