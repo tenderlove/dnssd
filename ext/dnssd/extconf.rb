@@ -33,6 +33,13 @@ if have_header 'iphlpapi.h' then
   have_func('if_nametoindex', %w[iphlpapi.h netioapi.h]) ||
   abort('unable to find if_indextoname or if_nametoindex')
 else
+  if platform =~ /solaris/ then
+    have_library('xnet') ||
+      abort('unable to find xnet library for if_indextoname/if_nametoindex')
+
+    $CFLAGS << ' -lxnet'
+  end
+
   have_func('if_indextoname', %w[sys/types.h sys/socket.h net/if.h]) &&
   have_func('if_nametoindex', %w[sys/types.h sys/socket.h net/if.h]) ||
   abort('unable to find if_indextoname or if_nametoindex')
