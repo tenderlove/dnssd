@@ -34,6 +34,7 @@ sample/server.rb
 sample/socket.rb
 test/test_dnssd.rb
 test/test_dnssd_flags.rb
+test/test_dnssd_getaddrinfo.rb
 test/test_dnssd_record.rb
 test/test_dnssd_reply.rb
 test/test_dnssd_reply_browse.rb
