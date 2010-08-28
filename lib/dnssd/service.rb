@@ -116,7 +116,7 @@ class DNSSD::Service
   # setup your /etc/nsswitch.conf correctly.  See
   # http://avahi.org/wiki/AvahiAndUnicastDotLocal for details
 
-  def getaddrinfo(host, protocol = nil, flags = 0,
+  def getaddrinfo(host, protocol = 0, flags = 0,
                   interface = DNSSD::InterfaceAny, &block)
     interface = DNSSD.interface_index interface unless Integer === interface
 
@@ -137,9 +137,9 @@ class DNSSD::Service
 
       addrinfo = Socket.getaddrinfo host, nil, family
 
-      addrinfo.each do |_, _, host, ip, _|
+      addrinfo.each do |_, _, a_host, ip, _|
         sockaddr = Socket.pack_sockaddr_in 0, ip
-        @replies << DNSSD::Reply::AddrInfo.new(self, 0, 0, host, sockaddr, 0)
+        @replies << DNSSD::Reply::AddrInfo.new(self, 0, 0, a_host, sockaddr, 0)
       end
     end
   end
