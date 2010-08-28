@@ -28,7 +28,7 @@ module DNSSD
 
   def self.announce(socket, name, service = nil, text_record = nil, flags = 0,
                     interface = DNSSD::InterfaceAny, &block)
-    _, port, _, address = socket.addr
+    _, port, = socket.addr
 
     raise ArgumentError, 'socket not bound' if port == 0
 

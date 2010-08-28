@@ -63,8 +63,6 @@ class DNSSD::Reply::Resolve < DNSSD::Reply
                         else raise ArgumentError, "invalid family #{family}"
                         end
 
-    addresses = []
-
     service = DNSSD::Service.new
 
     begin

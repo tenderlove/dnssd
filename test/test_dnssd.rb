@@ -36,8 +36,7 @@ class TestDNSSD < MiniTest::Unit::TestCase
   def test_class_announce_tcp_server_service
     t = Thread.current
 
-    resolver = DNSSD.resolve 'blackjack resolve', '_blackjack._tcp',
-                             'local.' do |reply|
+    DNSSD.resolve 'blackjack resolve', '_blackjack._tcp', 'local.' do |reply|
       t[:reply] = reply
     end
 
