@@ -19,7 +19,7 @@ class TestDNSSDReplyResolve < MiniTest::Unit::TestCase
 
     assert_instance_of TCPSocket, socket
     assert_equal @port,       socket.peeraddr[1]
-    assert_equal 'localhost', socket.peeraddr[2]
+    assert_equal 'localhost', socket.peeraddr(true)[2]
   ensure
     socket.close if socket
     server.close if server
@@ -37,7 +37,7 @@ class TestDNSSDReplyResolve < MiniTest::Unit::TestCase
 
     assert_instance_of UDPSocket, socket
     assert_equal @port,       socket.peeraddr[1]
-    assert_equal 'localhost', socket.peeraddr[2]
+    assert_equal 'localhost', socket.peeraddr(true)[2]
   ensure
     socket.close if socket
     server.close if server

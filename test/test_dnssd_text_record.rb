@@ -2,13 +2,10 @@ require 'minitest/autorun'
 require 'dnssd'
 
 class TestDNSSDTextRecord < MiniTest::Unit::TestCase
-
-  def setup
-    @TR = DNSSD::TextRecord
-  end
+  TR = DNSSD::TextRecord
 
   def test_encode
-    tr = @TR.new
+    tr = TR.new
 
     tr['key1'] = nil
     tr['key2'] = ''
@@ -18,7 +15,7 @@ class TestDNSSDTextRecord < MiniTest::Unit::TestCase
   end
 
   def test_encode_long
-    tr = @TR.new
+    tr = TR.new
 
     tr['key'] = 'X' * 252
 
@@ -48,35 +45,35 @@ class TestDNSSDTextRecord < MiniTest::Unit::TestCase
       'email'     => ''
     }
 
-    assert_equal expected, @TR.new(text_record).to_hash
+    assert_equal expected, TR.new(text_record).to_hash
   end
 
   def test_decode_bad
     assert_raises ArgumentError do
-      @TR.new("\x01") # length past end-of-record
+      TR.new("\x01") # length past end-of-record
     end
 
     assert_raises ArgumentError do
       # no key
-      @TR.new("\x01=")
+      TR.new("\x01=")
     end
 
     assert_raises ArgumentError do
       # 0-length key
-      @TR.new("\x02=v")
+      TR.new("\x02=v")
     end
   end
 
   def test_decode_empty
-    assert_equal({}, @TR.new(""))
-    assert_equal({}, @TR.new("\x00"))
-    assert_equal({}, @TR.new("\x00\x00"))
+    assert_equal({}, TR.new(""))
+    assert_equal({}, TR.new("\x00"))
+    assert_equal({}, TR.new("\x00\x00"))
   end
 
   def test_decode_value
-    assert_equal({ 'k' => nil }, @TR.new("\x01k").to_hash)
-    assert_equal({ 'k' => ''  }, @TR.new("\x02k=").to_hash)
-    assert_equal({ 'k' => 'v' }, @TR.new("\x03k=v").to_hash)
+    assert_equal({ 'k' => nil }, TR.new("\x01k").to_hash)
+    assert_equal({ 'k' => ''  }, TR.new("\x02k=").to_hash)
+    assert_equal({ 'k' => 'v' }, TR.new("\x03k=v").to_hash)
   end
 
 end
