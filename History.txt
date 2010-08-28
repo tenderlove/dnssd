@@ -1,3 +1,9 @@
+=== 1.3.3 / 2010-08-29
+
+* Bug fixes
+  * Fix LocalJumpError issue on 1.9.  Patch by Tim Lucas.
+  * Force reverse lookup on 1.9 for tests.  Patch by Tim Lucas.
+
 === 1.3.2 / 2010-08-28
 
 * Bug fixes
