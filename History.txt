@@ -1,7 +1,8 @@
 === 1.3.4 / 2010-08-29
 
-* Bug fix
+* Bug fixes
   * Fixed installation of dnssd shared object at gem build time
+  * Fixed 64 -> 32 bit truncation warnings
 
 === 1.3.3 / 2010-08-29
 

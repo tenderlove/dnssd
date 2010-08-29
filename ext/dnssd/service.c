@@ -241,7 +241,7 @@ dnssd_service_add_record(VALUE self, VALUE _flags, VALUE _rrtype, VALUE _rdata,
   rrtype = NUM2UINT(_rrtype);
   rdlen = RSTRING_LEN(_rdata);
   rdata = (void *)RSTRING_PTR(_rdata);
-  ttl = NUM2ULONG(_ttl);
+  ttl = (uint32_t)NUM2ULONG(_ttl);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
@@ -308,7 +308,7 @@ dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
     flags = (DNSServiceFlags)NUM2ULONG(_flags);
 
   if (!NIL_P(_interface))
-    interface = NUM2ULONG(_interface);
+    interface = (uint32_t)NUM2ULONG(_interface);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
@@ -358,7 +358,7 @@ dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
     flags = (DNSServiceFlags)NUM2ULONG(_flags);
 
   if (!NIL_P(_interface))
-    interface = NUM2ULONG(_interface);
+    interface = (uint32_t)NUM2ULONG(_interface);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
@@ -418,7 +418,7 @@ dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
     flags = (DNSServiceFlags)NUM2ULONG(_flags);
 
   if (!NIL_P(_interface))
-    interface = NUM2ULONG(_interface);
+    interface = (uint32_t)NUM2ULONG(_interface);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
@@ -474,7 +474,7 @@ dnssd_service_query_record(VALUE self, VALUE _flags, VALUE _interface,
   uint16_t rrclass;
 
   flags = (DNSServiceFlags)NUM2ULONG(_flags);
-  interface = NUM2ULONG(_interface);
+  interface = (uint32_t)NUM2ULONG(_interface);
   fullname = StringValueCStr(_fullname);
   rrtype = NUM2UINT(_rrtype);
   rrclass = NUM2UINT(_rrclass);
@@ -550,7 +550,7 @@ dnssd_service_register(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
     flags = (DNSServiceFlags)NUM2ULONG(_flags);
 
   if (!NIL_P(_interface))
-    interface = NUM2ULONG(_interface);
+    interface = (uint32_t)NUM2ULONG(_interface);
 
   if (rb_block_given_p())
     callback = dnssd_service_register_reply;
@@ -610,10 +610,10 @@ dnssd_service_resolve(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
   domain = StringValueCStr(_domain);
 
   if (!NIL_P(_flags))
-    flags = NUM2ULONG(_flags);
+    flags = (uint32_t)NUM2ULONG(_flags);
 
   if (!NIL_P(_interface))
-    interface = NUM2ULONG(_interface);
+    interface = (uint32_t)NUM2ULONG(_interface);
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
