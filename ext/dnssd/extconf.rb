@@ -45,6 +45,7 @@ else
   abort('unable to find if_indextoname or if_nametoindex')
 end
 
+# HACK prefer Socket.getservbyport in 1.9
 have_func('getservbyport', 'netdb.h') ||
 abort('unable to find getservbyport')
 
@@ -69,5 +70,10 @@ have_func 'kDNSServiceFlagsShareConnection', 'dns_sd.h'
 # avahi 0.6.25 is missing errors after BadTime
 have_func 'kDNSServiceErr_BadSig', 'dns_sd.h'
 
+puts
+puts 'checking for ruby features'
+have_header 'ruby/encoding.h'
+
+puts
 create_makefile 'dnssd/dnssd'
 
