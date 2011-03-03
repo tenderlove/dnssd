@@ -1,10 +1,11 @@
 require 'thread'
 
 ##
-# A DNSSD::Service may be used for one DNS-SD call at a time.  Between calls
-# the service must be stopped.  A single service can be reused multiple times.
+# A DNSSD::Service may be used for one DNS-SD call at a time.  The service is
+# automatically stopped after calling.  A single service can not be reused
+# multiple times.
 #
-# DNSSD::Service provides the raw DNS-SD functions via the _ variants.
+# DNSSD::Service provides the raw DNS-SD functions via the +_+ variants.
 
 class DNSSD::Service
 
@@ -151,6 +152,9 @@ class DNSSD::Service
 
   ##
   # Yields results from the mDNS daemon, blocking until data is available.
+  # Use break or return when you wish to stop receiving results.
+  #
+  # The service is automatically stopped after calling this method.
 
   def process # :yields: DNSSD::Result
     @thread = Thread.current
@@ -233,9 +237,6 @@ class DNSSD::Service
   # The service is resolved to a target host name, port number, and text
   # record, all contained in the DNSSD::Reply object passed to the required
   # block.
-  #
-  # The returned service can be used to control when to stop resolving the
-  # service (see DNSSD::Service#stop).
   #
   #   service.resolve "foo bar", "_http._tcp", "local" do |r|
   #     p r
