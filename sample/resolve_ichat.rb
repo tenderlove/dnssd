@@ -9,7 +9,7 @@ class ChatNameResolver
     Thread.new reply do |reply|
       DNSSD.resolve reply.name, reply.type, reply.domain do |resolve_reply|
         puts "Adding: #{resolve_reply.inspect}"
-        resolve_reply.service.stop
+        break
       end
     end
   end
@@ -17,7 +17,7 @@ class ChatNameResolver
     Thread.new reply do |reply|
       DNSSD.resolve reply.name, reply.type, reply.domain do |resolve_reply|
         puts "Removing: #{resolve_reply.inspect}"
-        resolve_reply.service.stop
+        break
       end
     end
   end

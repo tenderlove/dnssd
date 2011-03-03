@@ -20,14 +20,11 @@ browser.browse '_blackjack._tcp' do |reply|
   end.each do |_, service|
     next unless service.flags.add?
 
-    resolver = DNSSD::Service.new
-    resolver.resolve service do |r|
+    DNSSD::Service.new.resolve service do |r|
       puts "#{r.name} on #{r.target}:#{r.port}"
       puts "\t#{r.text_record.inspect}" unless r.text_record.empty?
       break unless r.flags.more_coming?
     end
-
-    resolver.stop
   end
 
   services.clear
