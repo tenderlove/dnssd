@@ -65,30 +65,26 @@ class DNSSD::Reply::Resolve < DNSSD::Reply
 
     service = DNSSD::Service.new
 
-    begin
-      service.getaddrinfo target, addrinfo_protocol, addrinfo_flags,
-                          @interface do |addrinfo|
-        address = addrinfo.address
+    service.getaddrinfo target, addrinfo_protocol, addrinfo_flags,
+                        @interface do |addrinfo|
+      address = addrinfo.address
 
-        begin
-          socket = nil
+      begin
+        socket = nil
 
-          case protocol
-          when 'tcp' then
-            socket = TCPSocket.new address, port
-          when 'udp' then
-            socket = UDPSocket.new
-            socket.connect address, port
-          end
-
-          return socket
-        rescue
-          next if addrinfo.flags.more_coming?
-          raise
+        case protocol
+        when 'tcp' then
+          socket = TCPSocket.new address, port
+        when 'udp' then
+          socket = UDPSocket.new
+          socket.connect address, port
         end
+
+        return socket
+      rescue
+        next if addrinfo.flags.more_coming?
+        raise
       end
-    ensure
-      service.stop
     end
   end
 

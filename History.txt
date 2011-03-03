@@ -1,3 +1,8 @@
+=== 2.0 / 2011-03-02
+
+* Major enhancment
+  * DNSSD::Service#process now automatically stops the DNSSD::Service.
+
 === 1.4 / 2010-09-07
 
 * Minor enhancements

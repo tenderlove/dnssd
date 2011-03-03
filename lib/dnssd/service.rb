@@ -167,6 +167,8 @@ class DNSSD::Service
     # raised when we jump out of DNSServiceProcess() while it's waiting for a
     # response
     self
+  ensure
+    stop unless stopped?
   end
 
   ##
