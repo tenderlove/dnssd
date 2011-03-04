@@ -18,6 +18,8 @@ HOE = Hoe.spec 'dnssd' do
   developer 'Charles Mills',   ''
   developer 'Rich Kilmer',     ''
 
+  rdoc_locations << 'rubyforge.org:/var/www/gforge-projects/dnssd/'
+
   clean_globs << 'lib/dnssd/*.{so,bundle,dll}'
 end
 
