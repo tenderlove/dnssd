@@ -157,14 +157,17 @@ class DNSSD::Service
   # The service is automatically stopped after calling this method.
 
   def process # :yields: DNSSD::Result
-    @thread = Thread.current
+    #Commented out this line so that the if in service.c isn't run that leads us to an endless Thread.join.
+    #While the condition in service.c is supposed to not run if @thread is Thread.current, it is, and is
+    #Making it impossible to call `stop` on a service. Letting @thread be nil avoids the condition.
+    #@thread = Thread.current
 
     while @continue do
       _process if @replies.empty?
       yield @replies.shift until @replies.empty?
     end
 
-    @thread = nil
+    #@thread = nil
 
     self
   rescue DNSSD::ServiceNotRunningError
