@@ -211,6 +211,9 @@ dnssd_service_stop(VALUE self) {
 static VALUE
 dnssd_service_process(VALUE self) {
   DNSServiceRef *client;
+  int dnssd_fd, result;
+  rb_fdset_t read;
+  struct timeval timeout;
 
   get(cDNSSDService, self, DNSServiceRef, client);
 
@@ -219,10 +222,31 @@ dnssd_service_process(VALUE self) {
     return Qnil;
   }
 
-  rb_thread_wait_fd(DNSServiceRefSockFD(*client));
+  dnssd_fd = DNSServiceRefSockFD(*client);
+
+  if (-1 == dnssd_fd)
+    rb_raise(eDNSSDError, "unable to get DNSSD FD for result processing");
+
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 10000;
+
+  rb_fd_init(&read);
+
+retry:
+  rb_fd_zero(&read);
+  rb_fd_set(dnssd_fd, &read);
+
+  result = rb_thread_fd_select(dnssd_fd + 1, &read, NULL, NULL, &timeout);
+
+  if (result == -1)
+      rb_sys_fail("select");
 
   if (rb_ivar_get(self, dnssd_iv_continue) == Qfalse)
     return Qnil;
+
+  /* timeout */
+  if (result == 0)
+      goto retry;
 
   DNSServiceErrorType e = DNSServiceProcessResult(*client);
   dnssd_check_error_code(e);
