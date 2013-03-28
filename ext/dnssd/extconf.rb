@@ -49,6 +49,9 @@ end
 have_func('getservbyport', 'netdb.h') ||
 abort('unable to find getservbyport')
 
+have_func('rb_thread_fd_select', 'ruby/intern.h') ||
+abort('unable to find rb_thread_fd_select, your ruby is too old')
+
 have_type('struct sockaddr_in', 'netinet/in.h') ||
 abort('unable to find struct sockaddr_in')
 
