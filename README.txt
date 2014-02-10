@@ -38,7 +38,7 @@ Browsing services:
 
 * OS X
 * The dns-sd library on other operating systems
-* avahi 0.6.25+
+* avahi 0.6.25+ (plus libavahi-compat-libdnssd-dev on debian)
 
 == INSTALL:
 

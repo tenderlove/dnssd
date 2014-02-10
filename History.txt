@@ -4,6 +4,8 @@
   * Use rb_thread_fd_select() with a timeout instead of rb_thread_wait_fd()
     which allows DNSSD#service to stop in a timely manner.  Fixes #10 by Mick
     Staugaard, #13 by Linux-cpp-lisp
+  * Document necessary dependencies for dnssd on debian.  Issue #14 by
+    elmatou.
 
 === 2.0 / 2011-03-02
 
