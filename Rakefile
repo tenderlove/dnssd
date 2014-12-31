@@ -9,8 +9,6 @@ Hoe.plugin :git
 Hoe.plugin :compiler
 
 HOE = Hoe.spec 'dnssd' do
-  self.rubyforge_name = 'dnssd'
-
   developer 'Eric Hodel',      'drbrain@segment.net'
   developer 'Aaron Patterson', 'aaronp@rubyforge.org'
   developer 'Phil Hagelberg',  'phil@hagelb.org'
