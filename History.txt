@@ -1,4 +1,4 @@
-=== 2.0.1
+=== 2.0.1 / 2015-01-08
 
 * Bug fix:
   * Use rb_thread_fd_select() with a timeout instead of rb_thread_wait_fd()
