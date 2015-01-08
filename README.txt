@@ -1,7 +1,7 @@
 = dnssd
 
-* http://rubyforge.org/projects/dnssd
-* http://github.com/tenderlove/dnssd
+* https://github.com/tenderlove/dnssd
+* http://docs.seattlerb.org/dnssd
 * http://developer.apple.com/documentation/Networking/Conceptual/dns_discovery_api/Introduction.html
 
 == DESCRIPTION:
