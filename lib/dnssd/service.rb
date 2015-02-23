@@ -26,7 +26,7 @@ class DNSSD::Service
 
   ##
   # Adds an extra DNS record of +type+ containing +data+.  +ttl+ is in
-  # seconds, use 0 for the default value.  +flags+ are currently ignored.  
+  # seconds, use 0 for the default value.  +flags+ are currently ignored.
   #
   # Must be called on a service only after #register.
   #
@@ -83,12 +83,12 @@ class DNSSD::Service
   # #domain set to the enumerated domain.
   #
   #   available_domains = []
-  #   
+  #
   #   service.enumerate_domains! do |r|
   #     available_domains << r.domain
   #     break unless r.flags.more_coming?
   #   end
-  #   
+  #
   #   p available_domains
 
   def enumerate_domains(flags = DNSSD::Flags::BrowseDomains,
