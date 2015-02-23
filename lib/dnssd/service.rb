@@ -63,7 +63,7 @@ class DNSSD::Service
 
     _browse flags.to_i, interface, type, domain
 
-    process(&block)
+    process(@replies, &block)
   end
 
   ##
@@ -101,7 +101,7 @@ class DNSSD::Service
 
     @type = :enumerate_domains
 
-    process(&block)
+    process(@replies, &block)
   end
 
   ##
@@ -128,7 +128,7 @@ class DNSSD::Service
 
       @type = :getaddrinfo
 
-      process(&block)
+      process(@replies, &block)
     else
       family = case protocol
                when IPv4 then Socket::AF_INET
@@ -156,12 +156,15 @@ class DNSSD::Service
   #
   # The service is automatically stopped after calling this method.
 
-  def process # :yields: DNSSD::Result
+  def process(queue) # :yields: DNSSD::Result
     @thread = Thread.current
 
+    io = IO.new ref_sock_fd
+    rd = [io]
+
     while @continue do
-      _process if @replies.empty?
-      yield @replies.shift until @replies.empty?
+      _process(rd) if queue.empty?
+      yield queue.shift until queue.empty?
     end
 
     @thread = nil
@@ -199,7 +202,7 @@ class DNSSD::Service
 
     @type = :query_record
 
-    process(&block)
+    process(@replies, &block)
   end
 
   ##
@@ -223,7 +226,7 @@ class DNSSD::Service
 
     @type = :register
 
-    process(&block) if block
+    process(@replies, &block) if block
   end
 
   ##
@@ -254,7 +257,7 @@ class DNSSD::Service
 
     @type = :resolve
 
-    process(&block)
+    process(@replies, &block)
   end
 
   ##
@@ -266,10 +269,8 @@ class DNSSD::Service
 
   private
 
-  def _process
+  def _process(rd)
     return if stopped?
-    io = IO.new ref_sock_fd
-    rd = [io]
     IO.select rd, nil, nil, 1
     return if @continue == false
     process_result
