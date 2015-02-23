@@ -199,59 +199,23 @@ dnssd_service_stop(VALUE self) {
   return self;
 }
 
-/* Binding to DNSServiceProcessResult
- *
- * When run with a single thread _process will block.
- *
- * _process works intelligently with threads.  If a service is waiting on data
- * from the daemon in a thread you can force _process to abort by setting
- * @continue to false and running the thread.
- */
-
 static VALUE
-dnssd_service_process(VALUE self) {
+dnssd_ref_sock_fd(VALUE self) {
   DNSServiceRef *client;
-  int dnssd_fd, result;
-  rb_fdset_t read;
-  struct timeval timeout;
-
   get(cDNSSDService, self, DNSServiceRef, client);
 
-  if (client == NULL) {
-    /* looks like this thread has already been stopped */
-    return Qnil;
-  }
+  return INT2NUM(DNSServiceRefSockFD(*client));
+}
 
-  dnssd_fd = DNSServiceRefSockFD(*client);
-
-  if (-1 == dnssd_fd)
-    rb_raise(eDNSSDError, "unable to get DNSSD FD for result processing");
-
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 10000;
-
-  rb_fd_init(&read);
-
-retry:
-  rb_fd_zero(&read);
-  rb_fd_set(dnssd_fd, &read);
-
-  result = rb_thread_fd_select(dnssd_fd + 1, &read, NULL, NULL, &timeout);
-
-  if (result == -1)
-      rb_sys_fail("select");
-
-  if (rb_ivar_get(self, dnssd_iv_continue) == Qfalse)
-    return Qnil;
-
-  /* timeout */
-  if (result == 0)
-      goto retry;
+static VALUE
+dnssd_process_result(VALUE self) {
+  DNSServiceRef *client;
+  get(cDNSSDService, self, DNSServiceRef, client);
 
   DNSServiceErrorType e = DNSServiceProcessResult(*client);
   dnssd_check_error_code(e);
 
-  return self;
+  return Qtrue;
 }
 
 /* call-seq:
@@ -755,6 +719,7 @@ Init_DNSSD_Service(void) {
   rb_define_method(cDNSSDService, "_register", dnssd_service_register, 8);
   rb_define_method(cDNSSDService, "_resolve", dnssd_service_resolve, 5);
 
-  rb_define_method(cDNSSDService, "_process", dnssd_service_process, 0);
+  rb_define_method(cDNSSDService, "ref_sock_fd", dnssd_ref_sock_fd, 0);
+  rb_define_method(cDNSSDService, "process_result", dnssd_process_result, 0);
 }
 

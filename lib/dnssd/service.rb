@@ -264,5 +264,15 @@ class DNSSD::Service
     not stopped?
   end
 
+  private
+
+  def _process
+    return if stopped?
+    io = IO.new ref_sock_fd
+    rd = [io]
+    IO.select rd, nil, nil, 1
+    return if @continue == false
+    process_result
+  end
 end
 
