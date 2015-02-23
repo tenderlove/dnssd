@@ -6,9 +6,9 @@ class TestDNSSDRecord < MiniTest::Unit::TestCase
   def setup
     @fullname = 'blackjack._blackjack._tcp.test.'
     @IN = DNSSD::Record::IN
-    @ipv4 = "\300\000\002\001"
-    @ipv6 = " \001\r\270\000\000\000\000\000\000\000\000\000\000\000\001"
-    @nowhere = "\007nowhere\007example\000"
+    @ipv4 = "\300\000\002\001".force_encoding("ascii-8bit")
+    @ipv6 = " \001\r\270\000\000\000\000\000\000\000\000\000\000\000\001".force_encoding("ascii-8bit")
+    @nowhere = "\007nowhere\007example\000".force_encoding("ascii-8bit")
 
     @R = DNSSD::Record
   end
@@ -26,6 +26,11 @@ class TestDNSSDRecord < MiniTest::Unit::TestCase
     assert_raises ArgumentError do
       @R.to_data DNSSD::Record::A, '2001:db8::1'
     end
+  end
+
+  def test_idk
+    a_variable = IPAddr.new '2001:db8::1'
+    assert_equal @ipv6, a_variable.hton
   end
 
   def test_class_to_data_AAAA
