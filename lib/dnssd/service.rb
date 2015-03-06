@@ -271,9 +271,9 @@ class DNSSD::Service
 
   def _process(rd)
     return if stopped?
-    IO.select rd, nil, nil, 1
-    return if @continue == false
-    process_result
+    if IO.select rd, nil, nil, 1
+      process_result
+    end
   end
 end
 
