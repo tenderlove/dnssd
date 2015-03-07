@@ -564,7 +564,7 @@ dnssd_service_register(VALUE klass, VALUE _flags, VALUE _interface, VALUE _name,
   port = htons((uint16_t)NUM2UINT(_port));
 
   if (!NIL_P(_text_record)) {
-    txt_rec = RSTRING_PTR(_text_record);
+    txt_rec = StringValuePtr(_text_record);
     txt_len = RSTRING_LEN(_text_record);
   }
 
@@ -612,7 +612,7 @@ dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
 
   reply = rb_class_new_instance(7, argv, cDNSSDReplyResolve);
 
-  dnssd_service_callback(service, reply);
+  rb_funcall(service, dnssd_id_push, 1, reply);
 }
 
 /* call-seq:
@@ -622,11 +622,12 @@ dnssd_service_resolve_reply(DNSServiceRef client, DNSServiceFlags flags,
  */
 
 static VALUE
-dnssd_service_resolve(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
+dnssd_service_resolve(VALUE klass, VALUE _flags, VALUE _interface, VALUE _name,
     VALUE _type, VALUE _domain) {
   const char *name, *type, *domain;
   DNSServiceFlags flags = 0;
   uint32_t interface = 0;
+  VALUE self;
 
   DNSServiceErrorType e;
   DNSServiceRef *client;
@@ -641,7 +642,9 @@ dnssd_service_resolve(VALUE self, VALUE _flags, VALUE _interface, VALUE _name,
   if (!NIL_P(_interface))
     interface = (uint32_t)NUM2ULONG(_interface);
 
-  get(cDNSSDService, self, DNSServiceRef, client);
+  client = xcalloc(1, sizeof(DNSServiceRef));
+  self = TypedData_Wrap_Struct(klass, &dnssd_service_type, client);
+  rb_obj_call_init(self, 0, 0);
 
   e = DNSServiceResolve(client, flags, interface, name, type, domain,
       dnssd_service_resolve_reply, (void *)self);
@@ -728,7 +731,7 @@ Init_DNSSD_Service(void) {
 #endif
   rb_define_method(cDNSSDService, "_query_record", dnssd_service_query_record, 5);
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_register", dnssd_service_register, 8);
-  rb_define_method(cDNSSDService, "_resolve", dnssd_service_resolve, 5);
+  rb_define_private_method(rb_singleton_class(cDNSSDService), "_resolve", dnssd_service_resolve, 5);
 
   rb_define_method(cDNSSDService, "ref_sock_fd", dnssd_ref_sock_fd, 0);
   rb_define_method(cDNSSDService, "process_result", dnssd_process_result, 0);

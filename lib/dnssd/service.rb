@@ -61,6 +61,8 @@ class DNSSD::Service
   def each_reply
     raise DNSSD::Error, 'already stopped' unless @continue
 
+    return enum_for __method__ unless block_given?
+
     io = IO.new ref_sock_fd
     rd = [io]
 
@@ -151,11 +153,6 @@ class DNSSD::Service
     end
   end
 
-  def inspect # :nodoc:
-    stopped = stopped? ? 'stopped' : 'running'
-    "#<%s:0x%x %s>" % [self.class, object_id, stopped]
-  end
-
   ##
   # Yields results from the mDNS daemon, blocking until data is available.
   # Use break or return when you wish to stop receiving results.
@@ -244,19 +241,13 @@ class DNSSD::Service
   #     p r
   #   end
 
-  def resolve(name, type = name.type, domain = name.domain, flags = 0,
-              interface = DNSSD::InterfaceAny, &block)
+  def self.resolve(name, type = name.type, domain = name.domain, flags = 0,
+              interface = DNSSD::InterfaceAny)
     name = name.name if DNSSD::Reply === name
     check_domain domain
     interface = DNSSD.interface_index interface unless Integer === interface
 
-    raise DNSSD::Error, 'service in progress' if started?
-
     _resolve flags.to_i, interface, name, type, domain
-
-    @type = :resolve
-
-    process(@replies, &block)
   end
 
   ##
@@ -264,14 +255,5 @@ class DNSSD::Service
 
   def started?
     not stopped?
-  end
-
-  private
-
-  def _process(rd)
-    return if stopped?
-    if IO.select rd, nil, nil, 1
-      process_result
-    end
   end
 end

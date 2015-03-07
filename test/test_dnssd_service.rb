@@ -31,7 +31,6 @@ class TestDNSSDService < DNSSD::Test
     assert true
   end
 
-  Thread.abort_on_exception = true
   def test_register_browse
     registered = Latch.new
     found      = Latch.new
@@ -64,5 +63,29 @@ class TestDNSSDService < DNSSD::Test
     found.await
     broadcast.join
     find.join
+  end
+
+  def test_resolve
+    done = Latch.new
+    name = SecureRandom.hex
+
+    broadcast = Thread.new do
+      txt = DNSSD::TextRecord.new 'foo' => 'bar'
+      service = DNSSD::Service.register name, "_http._tcp", nil, 8080, nil, txt
+      done.await
+      service.stop
+    end
+
+    service = DNSSD::Service.browse '_http._tcp'
+    reply = service.each_reply.find do |r|
+      r.name == name && r.domain == "local."
+    end
+
+    resolver = DNSSD::Service.resolve reply.name, reply.type, reply.domain
+    text = resolver.each_reply.first.text_record
+    assert_equal 'bar', text['foo']
+
+    done.release
+    broadcast.join
   end
 end
