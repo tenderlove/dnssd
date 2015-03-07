@@ -23,23 +23,6 @@ static ID dnssd_iv_service;
 static ID dnssd_iv_thread;
 static ID dnssd_iv_type;
 
-#define get(klass, obj, type, var) \
-  do {\
-    Check_Type(obj, T_DATA);\
-    if (rb_obj_is_kind_of(obj, klass) != Qtrue)\
-    rb_raise(rb_eTypeError,\
-        "wrong argument type %s",\
-        rb_class2name(CLASS_OF(obj)));\
-    Data_Get_Struct(obj, type, var);\
-  } while (0)
-
-static void
-dnssd_service_callback(VALUE self, VALUE reply) {
-  VALUE replies = rb_ivar_get(self, dnssd_iv_replies);
-
-  rb_funcall(replies, dnssd_id_push, 1, reply);
-}
-
 static void
 dnssd_service_free_client(DNSServiceRef *client) {
   if (*client) {
@@ -56,6 +39,32 @@ dnssd_service_free(void *ptr) {
     dnssd_service_free_client(client);
 
   free(client);
+}
+
+static const rb_data_type_t dnssd_service_type = {
+    "DNSSD/service",
+    {0, dnssd_service_free, 0,},
+    0, 0,
+#ifdef RUBY_TYPED_FREE_IMMEDIATELY
+    RUBY_TYPED_FREE_IMMEDIATELY,
+#endif
+};
+
+#define get(klass, obj, type, var) \
+  do {\
+    Check_Type(obj, T_DATA);\
+    if (rb_obj_is_kind_of(obj, klass) != Qtrue)\
+    rb_raise(rb_eTypeError,\
+        "wrong argument type %s",\
+        rb_class2name(CLASS_OF(obj)));\
+    Data_Get_Struct(obj, type, var);\
+  } while (0)
+
+static void
+dnssd_service_callback(VALUE self, VALUE reply) {
+  VALUE replies = rb_ivar_get(self, dnssd_iv_replies);
+
+  rb_funcall(replies, dnssd_id_push, 1, reply);
 }
 
 static VALUE
@@ -177,24 +186,15 @@ dnssd_service_stop(VALUE self) {
   VALUE thread;
   DNSServiceRef *client;
 
-  get(cDNSSDService, self, DNSServiceRef, client);
+  TypedData_Get_Struct(self, DNSServiceRef, &dnssd_service_type, client);
 
-  RDATA(self)->data = NULL;
-
-  if (client == NULL)
+  VALUE cont = rb_ivar_get(self, dnssd_iv_continue);
+  if (cont == Qfalse)
     rb_raise(eDNSSDError, "service is already stopped");
 
-  thread = rb_ivar_get(self, dnssd_iv_thread);
   rb_ivar_set(self, dnssd_iv_continue, Qfalse);
 
-  if (!NIL_P(thread) && thread != rb_thread_current()) {
-    rb_thread_run(thread);
-    rb_funcall(thread, dnssd_id_join, 0);
-  }
-
   dnssd_service_free_client(client);
-
-  rb_ivar_set(self, dnssd_iv_type, Qnil);
 
   return self;
 }
@@ -202,7 +202,7 @@ dnssd_service_stop(VALUE self) {
 static VALUE
 dnssd_ref_sock_fd(VALUE self) {
   DNSServiceRef *client;
-  get(cDNSSDService, self, DNSServiceRef, client);
+  TypedData_Get_Struct(self, DNSServiceRef, &dnssd_service_type, client);
 
   return INT2NUM(DNSServiceRefSockFD(*client));
 }
@@ -210,7 +210,7 @@ dnssd_ref_sock_fd(VALUE self) {
 static VALUE
 dnssd_process_result(VALUE self) {
   DNSServiceRef *client;
-  get(cDNSSDService, self, DNSServiceRef, client);
+  TypedData_Get_Struct(self, DNSServiceRef, &dnssd_service_type, client);
 
   DNSServiceErrorType e = DNSServiceProcessResult(*client);
   dnssd_check_error_code(e);
@@ -283,7 +283,7 @@ dnssd_service_browse_reply(DNSServiceRef client, DNSServiceFlags flags,
 
   reply = rb_class_new_instance(6, argv, cDNSSDReplyBrowse);
 
-  dnssd_service_callback(service, reply);
+  rb_funcall(service, dnssd_id_push, 1, reply);
 }
 
 /* call-seq:
@@ -293,7 +293,7 @@ dnssd_service_browse_reply(DNSServiceRef client, DNSServiceFlags flags,
  */
 
 static VALUE
-dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
+dnssd_service_browse(VALUE klass, VALUE _flags, VALUE _interface, VALUE _type,
     VALUE _domain) {
   const char *type;
   const char *domain = NULL;
@@ -302,6 +302,7 @@ dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
 
   DNSServiceErrorType e;
   DNSServiceRef *client;
+  VALUE self;
 
   dnssd_utf8_cstr(_type, type);
 
@@ -314,7 +315,9 @@ dnssd_service_browse(VALUE self, VALUE _flags, VALUE _interface, VALUE _type,
   if (!NIL_P(_interface))
     interface = (uint32_t)NUM2ULONG(_interface);
 
-  get(cDNSSDService, self, DNSServiceRef, client);
+  client = xcalloc(1, sizeof(DNSServiceRef));
+  self = TypedData_Wrap_Struct(klass, &dnssd_service_type, client);
+  rb_obj_call_init(self, 0, 0);
 
   e = DNSServiceBrowse(client, flags, interface, type, domain,
       dnssd_service_browse_reply, (void *)self);
@@ -710,7 +713,7 @@ Init_DNSSD_Service(void) {
   rb_define_method(cDNSSDService, "stopped?", dnssd_service_stopped_p, 0);
 
   rb_define_method(cDNSSDService, "_add_record", dnssd_service_add_record, 4);
-  rb_define_method(cDNSSDService, "_browse", dnssd_service_browse, 4);
+  rb_define_private_method(rb_singleton_class(cDNSSDService), "_browse", dnssd_service_browse, 4);
   rb_define_method(cDNSSDService, "_enumerate_domains", dnssd_service_enumerate_domains, 2);
 #ifdef HAVE_DNSSERVICEGETADDRINFO
   rb_define_method(cDNSSDService, "_getaddrinfo", dnssd_service_getaddrinfo, 4);

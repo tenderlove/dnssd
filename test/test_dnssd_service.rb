@@ -30,8 +30,8 @@ class TestDNSSDService < DNSSD::Test
 
     domains = []
     broadcast = Thread.new do
-      service = DNSSD::Service.new
-      service.register name, "_http._tcp", nil, 8080 do |r|
+      service = DNSSD::Service.register name, "_http._tcp", nil, 8080
+      service.each_response do |r|
         domains << r.domain
         registered.release
         found.await
@@ -40,8 +40,8 @@ class TestDNSSDService < DNSSD::Test
     end
 
     find = Thread.new do
-      service = DNSSD::Service.new
-      service.browse '_http._tcp' do |r|
+      service = DNSSD::Service.browse '_http._tcp'
+      service.each_response do |r|
         if r.name == name
           found.release
           service.stop

@@ -20,8 +20,6 @@ class DNSSD::Service
   def initialize
     @replies = []
     @continue = true
-    @thread = nil
-    @type = nil
   end
 
   ##
@@ -52,18 +50,31 @@ class DNSSD::Service
   #   rescue Timeout::Error
   #   end
 
-  def browse(type, domain = nil, flags = 0, interface = DNSSD::InterfaceAny,
+  def self.browse(type, domain = nil, flags = 0, interface = DNSSD::InterfaceAny,
              &block)
     check_domain domain
     interface = DNSSD.interface_index interface unless Integer === interface
 
-    raise DNSSD::Error, 'service in progress' if started?
-
-    @type = :browse
-
     _browse flags.to_i, interface, type, domain
+  end
 
-    process(@replies, &block)
+  def each_reply
+    raise DNSSD::Error, 'already stopped' unless @continue
+
+    io = IO.new ref_sock_fd
+    rd = [io]
+
+    while @continue
+      if IO.select rd, nil, nil, 1
+        process_result
+        @replies.each { |r| yield r }
+        @replies.clear
+      end
+    end
+  end
+
+  def push record
+    @replies << record
   end
 
   ##
@@ -75,6 +86,13 @@ class DNSSD::Service
     raise ArgumentError, 'domain name string is too long' if
       domain.length >= MAX_DOMAIN_NAME - 1
   end
+
+  def self.check_domain(domain)
+    return unless domain
+    raise ArgumentError, 'domain name string is too long' if
+      domain.length >= MAX_DOMAIN_NAME - 1
+  end
+
 
   ##
   # Enumerate domains available for browsing and registration.
