@@ -276,4 +276,3 @@ class DNSSD::Service
     end
   end
 end
-
