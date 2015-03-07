@@ -722,7 +722,7 @@ Init_DNSSD_Service(void) {
 
   rb_define_method(cDNSSDService, "_add_record", dnssd_service_add_record, 4);
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_browse", dnssd_service_browse, 4);
-  rb_define_method(rb_singleton_class(cDNSSDService), "_enumerate_domains", dnssd_service_enumerate_domains, 2);
+  rb_define_private_method(rb_singleton_class(cDNSSDService), "_enumerate_domains", dnssd_service_enumerate_domains, 2);
 #ifdef HAVE_DNSSERVICEGETADDRINFO
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_getaddrinfo", dnssd_service_getaddrinfo, 4);
 #endif
