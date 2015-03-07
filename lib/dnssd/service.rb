@@ -109,17 +109,11 @@ class DNSSD::Service
   #
   #   p available_domains
 
-  def enumerate_domains(flags = DNSSD::Flags::BrowseDomains,
+  def self.enumerate_domains(flags = DNSSD::Flags::BrowseDomains,
                         interface = DNSSD::InterfaceAny, &block)
     interface = DNSSD.interface_index interface unless Integer === interface
 
-    raise DNSSD::Error, 'service in progress' if started?
-
     _enumerate_domains flags.to_i, interface
-
-    @type = :enumerate_domains
-
-    process(@replies, &block)
   end
 
   ##

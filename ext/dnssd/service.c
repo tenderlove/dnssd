@@ -345,7 +345,7 @@ dnssd_service_enumerate_domains_reply(DNSServiceRef client,
 
   reply = rb_class_new_instance(4, argv, cDNSSDReplyDomain);
 
-  dnssd_service_callback(service, reply);
+  rb_funcall(service, dnssd_id_push, 1, reply);
 }
 
 /* call-seq:
@@ -355,9 +355,10 @@ dnssd_service_enumerate_domains_reply(DNSServiceRef client,
  */
 
 static VALUE
-dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
+dnssd_service_enumerate_domains(VALUE klass, VALUE _flags, VALUE _interface) {
   DNSServiceFlags flags = 0;
   uint32_t interface = 0;
+  VALUE self;
 
   DNSServiceErrorType e;
   DNSServiceRef *client;
@@ -368,7 +369,9 @@ dnssd_service_enumerate_domains(VALUE self, VALUE _flags, VALUE _interface) {
   if (!NIL_P(_interface))
     interface = (uint32_t)NUM2ULONG(_interface);
 
-  get(cDNSSDService, self, DNSServiceRef, client);
+  client = xcalloc(1, sizeof(DNSServiceRef));
+  self = TypedData_Wrap_Struct(klass, &dnssd_service_type, client);
+  rb_obj_call_init(self, 0, 0);
 
   e = DNSServiceEnumerateDomains(client, flags, interface,
       dnssd_service_enumerate_domains_reply, (void *)self);
@@ -719,7 +722,7 @@ Init_DNSSD_Service(void) {
 
   rb_define_method(cDNSSDService, "_add_record", dnssd_service_add_record, 4);
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_browse", dnssd_service_browse, 4);
-  rb_define_method(cDNSSDService, "_enumerate_domains", dnssd_service_enumerate_domains, 2);
+  rb_define_method(rb_singleton_class(cDNSSDService), "_enumerate_domains", dnssd_service_enumerate_domains, 2);
 #ifdef HAVE_DNSSERVICEGETADDRINFO
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_getaddrinfo", dnssd_service_getaddrinfo, 4);
 #endif
@@ -730,4 +733,3 @@ Init_DNSSD_Service(void) {
   rb_define_method(cDNSSDService, "ref_sock_fd", dnssd_ref_sock_fd, 0);
   rb_define_method(cDNSSDService, "process_result", dnssd_process_result, 0);
 }
-

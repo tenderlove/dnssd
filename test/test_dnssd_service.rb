@@ -22,6 +22,15 @@ class TestDNSSDService < DNSSD::Test
     assert addresses.index('127.0.0.1')
   end
 
+  def test_enumerate
+    service = DNSSD::Service.enumerate_domains
+    service.each_reply do |reply|
+      # I *think* there will be a local. on every machine??
+      break if reply.domain == 'local.'
+    end
+    assert true
+  end
+
   def test_register_browse
     registered = Latch.new
     found      = Latch.new
