@@ -11,11 +11,10 @@ class TestDNSSDService < DNSSD::Test
   end
 
   def test_class_getaddrinfo
-    service = DNSSD::Service.new
-
     addresses = []
+    service = DNSSD::Service.getaddrinfo 'localhost'
 
-    service.getaddrinfo 'localhost' do |addrinfo|
+    service.each_reply do |addrinfo|
       addresses << addrinfo.address
       break unless addrinfo.flags.more_coming?
     end
@@ -41,6 +40,7 @@ class TestDNSSDService < DNSSD::Test
 
     find = Thread.new do
       service = DNSSD::Service.browse '_http._tcp'
+      registered.await
       service.each_reply do |r|
         if r.name == name
           found.release

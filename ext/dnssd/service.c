@@ -400,7 +400,7 @@ dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
 
   reply = rb_class_new_instance(6, argv, cDNSSDReplyAddrInfo);
 
-  dnssd_service_callback(service, reply);
+  rb_funcall(service, dnssd_id_push, 1, reply);
 }
 
 /* call-seq:
@@ -410,12 +410,13 @@ dnssd_service_getaddrinfo_reply(DNSServiceRef client, DNSServiceFlags flags,
  */
 
 static VALUE
-dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
+dnssd_service_getaddrinfo(VALUE klass, VALUE _flags, VALUE _interface,
     VALUE _protocol, VALUE _host) {
   DNSServiceFlags flags = 0;
   uint32_t interface = 0;
   DNSServiceProtocol protocol = 0;
   const char *host;
+  VALUE self;
 
   DNSServiceErrorType e;
   DNSServiceRef *client;
@@ -430,7 +431,9 @@ dnssd_service_getaddrinfo(VALUE self, VALUE _flags, VALUE _interface,
   if (!NIL_P(_interface))
     interface = (uint32_t)NUM2ULONG(_interface);
 
-  get(cDNSSDService, self, DNSServiceRef, client);
+  client = xcalloc(1, sizeof(DNSServiceRef));
+  self = TypedData_Wrap_Struct(klass, &dnssd_service_type, client);
+  rb_obj_call_init(self, 0, 0);
 
   e = DNSServiceGetAddrInfo(client, flags, interface, protocol, host,
       dnssd_service_getaddrinfo_reply, (void *)self);
@@ -718,7 +721,7 @@ Init_DNSSD_Service(void) {
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_browse", dnssd_service_browse, 4);
   rb_define_method(cDNSSDService, "_enumerate_domains", dnssd_service_enumerate_domains, 2);
 #ifdef HAVE_DNSSERVICEGETADDRINFO
-  rb_define_method(cDNSSDService, "_getaddrinfo", dnssd_service_getaddrinfo, 4);
+  rb_define_private_method(rb_singleton_class(cDNSSDService), "_getaddrinfo", dnssd_service_getaddrinfo, 4);
 #endif
   rb_define_method(cDNSSDService, "_query_record", dnssd_service_query_record, 5);
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_register", dnssd_service_register, 8);
