@@ -231,20 +231,13 @@ class DNSSD::Service
   #     puts "successfully registered: #{r.inspect}"
   #   end
 
-  def register(name, type, domain, port, host = nil, text_record = nil,
-               flags = 0, interface = DNSSD::InterfaceAny, &block)
+  def self.register(name, type, domain, port, host = nil, text_record = nil,
+               flags = 0, interface = DNSSD::InterfaceAny)
     check_domain domain
     interface = DNSSD.interface_index interface unless Integer === interface
     text_record = text_record.encode if text_record
 
-    raise DNSSD::Error, 'service in progress' if started?
-
-    _register flags.to_i, interface, name, type, domain, host, port,
-              text_record, &block
-
-    @type = :register
-
-    process(@replies, &block) if block
+    _register flags.to_i, interface, name, type, domain, host, port, text_record
   end
 
   ##
