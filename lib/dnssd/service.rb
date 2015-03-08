@@ -195,17 +195,11 @@ class DNSSD::Service
   #     p record
   #   end
 
-  def query_record(fullname, record_type, record_class = DNSSD::Record::IN,
-                   flags = 0, interface = DNSSD::InterfaceAny, &block)
+  def self.query_record(fullname, record_type, record_class = DNSSD::Record::IN,
+                   flags = 0, interface = DNSSD::InterfaceAny)
     interface = DNSSD.interface_index interface unless Integer === interface
 
-    raise DNSSD::Error, 'service in progress' if started?
-
     _query_record flags.to_i, interface, fullname, record_type, record_class
-
-    @type = :query_record
-
-    process(@replies, &block)
   end
 
   ##

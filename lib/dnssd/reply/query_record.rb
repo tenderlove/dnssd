@@ -178,6 +178,4 @@ class DNSSD::Reply::QueryRecord < DNSSD::Reply
       fullname, ttl, record_class_name, record_type_name, record_data
     ]
   end
-
 end
-

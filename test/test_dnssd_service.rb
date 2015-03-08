@@ -82,8 +82,33 @@ class TestDNSSDService < DNSSD::Test
     end
 
     resolver = DNSSD::Service.resolve reply.name, reply.type, reply.domain
-    text = resolver.each_reply.first.text_record
+    text = resolver.each_reply.find(&:text_record).text_record
     assert_equal 'bar', text['foo']
+
+    done.release
+    broadcast.join
+  end
+
+  def test_query_record
+    done = Latch.new
+    name = SecureRandom.hex
+
+    broadcast = Thread.new do
+      txt = DNSSD::TextRecord.new 'foo' => 'bar'
+      service = DNSSD::Service.register name, "_http._tcp", nil, 8080, nil, txt
+      done.await
+      service.stop
+    end
+
+    service = DNSSD::Service.browse '_http._tcp'
+    reply = service.each_reply.find do |r|
+      r.name == name && r.domain == "local."
+    end
+    service.stop
+
+    service = DNSSD::Service.query_record reply.fullname, DNSSD::Record::SRV
+    assert service.each_reply.first
+    service.stop
 
     done.release
     broadcast.join
