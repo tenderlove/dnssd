@@ -54,8 +54,7 @@ class DNSSD::Service
   #   rescue Timeout::Error
   #   end
 
-  def self.browse(type, domain = nil, flags = 0, interface = DNSSD::InterfaceAny,
-             &block)
+  def self.browse type, domain = nil, flags = 0, interface = DNSSD::InterfaceAny
     check_domain domain
     interface = DNSSD.interface_index interface unless Integer === interface
 
@@ -86,12 +85,6 @@ class DNSSD::Service
   ##
   # Raises an ArgumentError if +domain+ is too long including NULL terminator
   # and trailing '.'
-
-  def check_domain(domain)
-    return unless domain
-    raise ArgumentError, 'domain name string is too long' if
-      domain.length >= MAX_DOMAIN_NAME - 1
-  end
 
   def self.check_domain(domain)
     return unless domain
@@ -155,34 +148,6 @@ class DNSSD::Service
         @replies << DNSSD::Reply::AddrInfo.new(self, 0, 0, a_host, sockaddr, 0)
       end
     end
-  end
-
-  ##
-  # Yields results from the mDNS daemon, blocking until data is available.
-  # Use break or return when you wish to stop receiving results.
-  #
-  # The service is automatically stopped after calling this method.
-
-  def process(queue) # :yields: DNSSD::Result
-    @thread = Thread.current
-
-    io = IO.new ref_sock_fd
-    rd = [io]
-
-    while @continue do
-      _process(rd) if queue.empty?
-      yield queue.shift until queue.empty?
-    end
-
-    @thread = nil
-
-    self
-  rescue DNSSD::ServiceNotRunningError
-    # raised when we jump out of DNSServiceProcess() while it's waiting for a
-    # response
-    self
-  ensure
-    stop unless stopped?
   end
 
   ##
