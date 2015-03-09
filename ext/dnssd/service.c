@@ -668,6 +668,7 @@ Init_DNSSD_Service(void) {
   cDNSSDReplyQueryRecord = rb_path2class("DNSSD::Reply::QueryRecord");
   cDNSSDReplyRegister    = rb_path2class("DNSSD::Reply::Register");
   cDNSSDReplyResolve     = rb_path2class("DNSSD::Reply::Resolve");
+  VALUE sDNSSDService = rb_singleton_class(cDNSSDService);
 
   rb_cSocket = rb_path2class("Socket");
 
@@ -712,15 +713,17 @@ Init_DNSSD_Service(void) {
   rb_define_method(cDNSSDService, "stop", dnssd_service_stop, 0);
 
   rb_define_private_method(cDNSSDServiceRegister, "_add_record", dnssd_service_add_record, 4);
-  rb_define_private_method(rb_singleton_class(cDNSSDService), "_browse", dnssd_service_browse, 4);
-  rb_define_private_method(rb_singleton_class(cDNSSDService), "_enumerate_domains", dnssd_service_enumerate_domains, 2);
-#ifdef HAVE_DNSSERVICEGETADDRINFO
-  rb_define_private_method(rb_singleton_class(cDNSSDService), "_getaddrinfo", dnssd_service_getaddrinfo, 4);
-#endif
-  rb_define_private_method(rb_singleton_class(cDNSSDService), "_query_record", dnssd_service_query_record, 5);
-  rb_define_private_method(rb_singleton_class(cDNSSDService), "_register", dnssd_service_register, 8);
-  rb_define_private_method(rb_singleton_class(cDNSSDService), "_resolve", dnssd_service_resolve, 5);
+  rb_define_private_method(cDNSSDService, "ref_sock_fd", dnssd_ref_sock_fd, 0);
+  rb_define_private_method(cDNSSDService, "process_result", dnssd_process_result, 0);
 
-  rb_define_method(cDNSSDService, "ref_sock_fd", dnssd_ref_sock_fd, 0);
-  rb_define_method(cDNSSDService, "process_result", dnssd_process_result, 0);
+  /* private class methods */
+  rb_define_private_method(sDNSSDService, "_browse", dnssd_service_browse, 4);
+  rb_define_private_method(sDNSSDService, "_enumerate_domains", dnssd_service_enumerate_domains, 2);
+#ifdef HAVE_DNSSERVICEGETADDRINFO
+  rb_define_private_method(sDNSSDService, "_getaddrinfo", dnssd_service_getaddrinfo, 4);
+#endif
+  rb_define_private_method(sDNSSDService, "_query_record", dnssd_service_query_record, 5);
+  rb_define_private_method(sDNSSDService, "_register", dnssd_service_register, 8);
+  rb_define_private_method(sDNSSDService, "_resolve", dnssd_service_resolve, 5);
+
 }

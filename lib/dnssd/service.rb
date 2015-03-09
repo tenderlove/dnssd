@@ -14,6 +14,8 @@ class DNSSD::Service
   IPv6 = 2 unless const_defined? :IPv6
   # :startdoc:
 
+  class << self; private :new; end
+
   ##
   # Creates a new DNSSD::Service
 

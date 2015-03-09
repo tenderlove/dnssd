@@ -181,7 +181,6 @@ module DNSSD
   ensure
     service.stop unless service.stopped?
   end
-
 end
 
 require 'socket'

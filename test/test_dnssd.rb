@@ -71,6 +71,4 @@ class TestDNSSD < DNSSD::Test
 
     assert_match %r%^lo0?$%, DNSSD.interface_name(index)
   end
-
 end
-
