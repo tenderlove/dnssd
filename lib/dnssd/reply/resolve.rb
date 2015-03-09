@@ -63,10 +63,10 @@ class DNSSD::Reply::Resolve < DNSSD::Reply
                         else raise ArgumentError, "invalid family #{family}"
                         end
 
-    service = DNSSD::Service.new
+    service = DNSSD::Service.getaddrinfo target, addrinfo_protocol,
+      addrinfo_flags, @interface
 
-    service.getaddrinfo target, addrinfo_protocol, addrinfo_flags,
-                        @interface do |addrinfo|
+    service.each do |addrinfo|
       address = addrinfo.address
 
       begin
@@ -80,6 +80,7 @@ class DNSSD::Reply::Resolve < DNSSD::Reply
           socket.connect address, port
         end
 
+        service.stop
         return socket
       rescue
         next if addrinfo.flags.more_coming?

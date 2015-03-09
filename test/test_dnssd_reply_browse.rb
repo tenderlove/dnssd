@@ -46,6 +46,4 @@ class TestDNSSDReplyBrowse < MiniTest::Unit::TestCase
     socket.close if socket
     server.close if server
   end
-
 end
-

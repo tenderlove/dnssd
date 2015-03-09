@@ -149,9 +149,10 @@ module DNSSD
   # Synchronous version of DNSSD::Service#resolve
 
   def self.resolve!(*args, &block)
-    service = DNSSD::Service.new
-
-    run(service, :resolve, *args, &block)
+    service = DNSSD::Service.resolve(*args)
+    service.each { |r| yield r }
+  ensure
+    service.stop
   end
 
   ##
