@@ -217,6 +217,6 @@ class DNSSD::Service
   # Returns true if the service has been started.
 
   def started?
-    not stopped?
+    @continue
   end
 end

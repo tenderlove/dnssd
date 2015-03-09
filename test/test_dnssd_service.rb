@@ -140,4 +140,19 @@ class TestDNSSDService < DNSSD::Test
     assert_equal 'baz', record['bar']
     broadcast.join
   end
+
+  def test_stop
+    service = DNSSD::Service.browse '_http._tcp'
+    assert_predicate service, :started?
+    service.stop
+    refute_predicate service, :started?
+
+    assert_raises(DNSSD::Error) { service.each_reply { } }
+  end
+
+  def test_stop_twice
+    service = DNSSD::Service.browse '_http._tcp'
+    service.stop
+    assert_raises(DNSSD::Error) { service.stop }
+  end
 end

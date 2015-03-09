@@ -155,21 +155,6 @@ dnssd_service_s_allocate(VALUE klass) {
   return Data_Wrap_Struct(klass, 0, dnssd_service_free, client);
 }
 
-/* Returns true if the service has been stopped.
- */
-
-static VALUE
-dnssd_service_stopped_p(VALUE self) {
-  DNSServiceRef *client;
-
-  get(cDNSSDService, self, DNSServiceRef, client);
-
-  if (client)
-    return (*client) == NULL ? Qtrue : Qfalse;
-
-  return Qtrue;
-}
-
 /* Stops the service, closing the underlying socket and killing the underlying
  * thread.
  *
@@ -725,7 +710,6 @@ Init_DNSSD_Service(void) {
 #endif
 
   rb_define_method(cDNSSDService, "stop", dnssd_service_stop, 0);
-  rb_define_method(cDNSSDService, "stopped?", dnssd_service_stopped_p, 0);
 
   rb_define_private_method(cDNSSDServiceRegister, "_add_record", dnssd_service_add_record, 4);
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_browse", dnssd_service_browse, 4);
