@@ -241,10 +241,10 @@ dnssd_service_add_record(VALUE self, VALUE _flags, VALUE _rrtype, VALUE _rdata,
   flags = (DNSServiceFlags)NUM2ULONG(_flags);
   rrtype = NUM2UINT(_rrtype);
   rdlen = RSTRING_LEN(_rdata);
-  rdata = (void *)RSTRING_PTR(_rdata);
+  rdata = (void *)StringValuePtr(_rdata);
   ttl = (uint32_t)NUM2ULONG(_ttl);
 
-  get(cDNSSDService, self, DNSServiceRef, client);
+  TypedData_Get_Struct(self, DNSServiceRef, &dnssd_service_type, client);
 
   _record = rb_class_new_instance(0, NULL, cDNSSDRecord);
 

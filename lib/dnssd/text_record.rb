@@ -4,6 +4,31 @@ require 'delegate'
 # DNSSD::TextRecord is a Hash delegate that can encode its contents for DNSSD.
 
 class DNSSD::TextRecord < DelegateClass(Hash)
+  def self.decode text_record
+    record = {}
+
+    tr = text_record.unpack 'C*'
+
+    until tr.empty? do
+      size  = tr.shift
+
+      next if size.zero?
+
+      raise ArgumentError, 'ran out of data in text record' if tr.length < size
+
+      entry = tr.shift(size).pack('C*')
+
+      raise ArgumentError, 'key not found' unless entry =~ /^[^=]/
+
+      key, value = entry.split '=', 2
+
+      next unless key
+
+      record[key] = value
+    end
+
+    new record
+  end
 
   ##
   # Creates a new TextRecord decoding an encoded +text_record+ if given or
@@ -30,29 +55,7 @@ class DNSSD::TextRecord < DelegateClass(Hash)
   # Decodes +text_record+ and returns a Hash
 
   def decode(text_record)
-    record = {}
-
-    tr = text_record.unpack 'C*'
-
-    until tr.empty? do
-      size  = tr.shift
-
-      next if size.zero?
-
-      raise ArgumentError, 'ran out of data in text record' if tr.length < size
-
-      entry = tr.shift(size).pack('C*')
-
-      raise ArgumentError, 'key not found' unless entry =~ /^[^=]/
-
-      key, value = entry.split '=', 2
-
-      next unless key
-
-      record[key] = value
-    end
-
-    record
+    self.class.decode text_record
   end
 
   ##

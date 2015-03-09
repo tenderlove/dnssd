@@ -113,4 +113,30 @@ class TestDNSSDService < DNSSD::Test
     done.release
     broadcast.join
   end
+
+  def test_add_record
+    done = Latch.new
+    registered = Latch.new
+    broadcast = Thread.new do
+      txt = DNSSD::TextRecord.new 'bar' => 'baz'
+      service = DNSSD::Service.register name, "_http._tcp", nil, 8080
+      service.add_record(DNSSD::Record::TXT, txt.encode)
+      registered.release
+      done.await
+    end
+
+    registered.await
+    service = DNSSD::Service.browse '_http._tcp'
+    reply = service.each_reply.find { |r|
+      r.name == name && r.domain == "local."
+    }
+
+    query = DNSSD::Service.query_record reply.fullname, DNSSD::Record::TXT
+    r = query.each_reply.find do |r|
+      !r.flags.more_coming?
+    end
+    record = DNSSD::TextRecord.decode r.record
+    done.release
+    assert_equal 'baz', record['bar']
+  end
 end

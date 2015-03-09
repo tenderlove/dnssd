@@ -31,7 +31,6 @@ class DNSSD::Service
   # Returns the added DNSSD::Record
 
   def add_record(type, data, ttl = 0, flags = 0)
-    raise TypeError, 'must be called after register' unless @type == :register
     @records ||= []
 
     _add_record flags.to_i, type, data, ttl
