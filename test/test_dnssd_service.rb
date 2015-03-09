@@ -138,5 +138,6 @@ class TestDNSSDService < DNSSD::Test
     record = DNSSD::TextRecord.decode r.record
     done.release
     assert_equal 'baz', record['bar']
+    broadcast.join
   end
 end

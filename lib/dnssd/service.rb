@@ -36,8 +36,8 @@ class DNSSD::Service
     #
     # Returns the added DNSSD::Record
 
-    def add_record(type, data, ttl = 0, flags = 0)
-      _add_record flags.to_i, type, data, ttl
+    def add_record type, data, ttl = 0, flags = 0
+      @records << _add_record(flags.to_i, type, data, ttl)
     end
   end
 

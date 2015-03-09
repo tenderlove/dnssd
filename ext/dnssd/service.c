@@ -257,7 +257,6 @@ dnssd_service_add_record(VALUE self, VALUE _flags, VALUE _rrtype, VALUE _rdata,
 
   /* record will become invalid when this service is destroyed */
   rb_ivar_set(_record, dnssd_iv_service, self);
-  rb_ary_push(rb_ivar_get(self, dnssd_iv_records), _record);
 
   return _record;
 }
