@@ -8,6 +8,7 @@ require 'thread'
 # DNSSD::Service provides the raw DNS-SD functions via the +_+ variants.
 
 class DNSSD::Service
+  include Enumerable
 
   # :stopdoc:
   IPv4 = 1 unless const_defined? :IPv4
@@ -63,7 +64,7 @@ class DNSSD::Service
     _browse flags.to_i, interface, type, domain
   end
 
-  def each_reply
+  def each
     raise DNSSD::Error, 'already stopped' unless @continue
 
     return enum_for __method__ unless block_given?

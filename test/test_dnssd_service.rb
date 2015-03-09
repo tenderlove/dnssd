@@ -14,7 +14,7 @@ class TestDNSSDService < DNSSD::Test
     addresses = []
     service = DNSSD::Service.getaddrinfo 'localhost'
 
-    service.each_reply do |addrinfo|
+    service.each do |addrinfo|
       addresses << addrinfo.address
       break unless addrinfo.flags.more_coming?
     end
@@ -24,7 +24,7 @@ class TestDNSSDService < DNSSD::Test
 
   def test_enumerate
     service = DNSSD::Service.enumerate_domains
-    service.each_reply do |reply|
+    service.each do |reply|
       # I *think* there will be a local. on every machine??
       break if reply.domain == 'local.'
     end
@@ -38,7 +38,7 @@ class TestDNSSDService < DNSSD::Test
 
     broadcast = Thread.new do
       service = DNSSD::Service.register name, "_http._tcp", nil, 8080
-      service.each_reply do |reply|
+      service.each do |reply|
         if reply.domain == "local."
           registered.release
           found.await
@@ -50,7 +50,7 @@ class TestDNSSDService < DNSSD::Test
     find = Thread.new do
       registered.await
       service = DNSSD::Service.browse '_http._tcp'
-      service.each_reply do |r|
+      service.each do |r|
         if r.name == name && r.domain == "local."
           found.release
           service.stop
@@ -77,12 +77,12 @@ class TestDNSSDService < DNSSD::Test
     end
 
     service = DNSSD::Service.browse '_http._tcp'
-    reply = service.each_reply.find do |r|
+    reply = service.each.find do |r|
       r.name == name && r.domain == "local."
     end
 
     resolver = DNSSD::Service.resolve reply.name, reply.type, reply.domain
-    text = resolver.each_reply.find(&:text_record).text_record
+    text = resolver.each.find(&:text_record).text_record
     assert_equal 'bar', text['foo']
 
     done.release
@@ -101,13 +101,13 @@ class TestDNSSDService < DNSSD::Test
     end
 
     service = DNSSD::Service.browse '_http._tcp'
-    reply = service.each_reply.find do |r|
+    reply = service.each.find do |r|
       r.name == name && r.domain == "local."
     end
     service.stop
 
     service = DNSSD::Service.query_record reply.fullname, DNSSD::Record::SRV
-    assert service.each_reply.first
+    assert service.each.first
     service.stop
 
     done.release
@@ -127,12 +127,12 @@ class TestDNSSDService < DNSSD::Test
 
     registered.await
     service = DNSSD::Service.browse '_http._tcp'
-    reply = service.each_reply.find { |r|
+    reply = service.each.find { |r|
       r.name == name && r.domain == "local."
     }
 
     query = DNSSD::Service.query_record reply.fullname, DNSSD::Record::TXT
-    r = query.each_reply.find do |r|
+    r = query.each.find do |r|
       !r.flags.more_coming?
     end
     record = DNSSD::TextRecord.decode r.record
@@ -147,7 +147,7 @@ class TestDNSSDService < DNSSD::Test
     service.stop
     refute_predicate service, :started?
 
-    assert_raises(DNSSD::Error) { service.each_reply { } }
+    assert_raises(DNSSD::Error) { service.each { } }
   end
 
   def test_stop_twice
