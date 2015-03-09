@@ -21,8 +21,10 @@ class DNSSD::Service
   # Creates a new DNSSD::Service
 
   def initialize
-    @replies = []
+    @replies  = []
     @continue = true
+    @thread   = nil
+    @lock     = Mutex.new
   end
 
   class Register < ::DNSSD::Service
@@ -78,6 +80,13 @@ class DNSSD::Service
         @replies.each { |r| yield r }
         @replies.clear
       end
+    end
+  end
+
+  def async_each
+    @lock.synchronize do
+      raise DNSSD::Error, 'already stopped' unless @continue
+      @thread = Thread.new { each { |r| yield r } }
     end
   end
 
@@ -221,5 +230,12 @@ class DNSSD::Service
 
   def started?
     @continue
+  end
+
+  def stop
+    raise DNSSD::Error, 'service is already stopped' unless started?
+    @continue = false
+    @thread.join if @thread
+    _stop
   end
 end

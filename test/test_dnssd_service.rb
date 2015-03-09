@@ -31,6 +31,45 @@ class TestDNSSDService < DNSSD::Test
     assert true
   end
 
+  def test_two_threads_cannot_async
+    register = DNSSD::Service.register name, "_http._tcp", nil, 8080
+    running = Latch.new
+    register.async_each { |_| running.release }
+    running.await
+    t = Thread.new { register.async_each { |_| } }
+    register.stop
+
+    assert_raises(DNSSD::Error) { t.join }
+  end
+
+  def test_async_register_browse
+    registered = Latch.new
+    found      = Latch.new
+    name       = SecureRandom.hex
+
+    register = DNSSD::Service.register name, "_http._tcp", nil, 8080
+    register.async_each do |reply|
+      if reply.domain == "local."
+        registered.release
+        found.await
+      end
+    end
+
+    registered.await
+
+    browse = DNSSD::Service.browse '_http._tcp'
+    browse.async_each do |r|
+      if r.name == name && r.domain == "local."
+        found.release
+        assert_equal name, r.name
+        assert_equal "_http._tcp", r.type
+      end
+    end
+
+    register.stop
+    browse.stop
+  end
+
   def test_register_browse
     registered = Latch.new
     found      = Latch.new

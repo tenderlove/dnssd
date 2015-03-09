@@ -174,12 +174,6 @@ dnssd_service_stop(VALUE self) {
 
   TypedData_Get_Struct(self, DNSServiceRef, &dnssd_service_type, client);
 
-  VALUE cont = rb_ivar_get(self, dnssd_iv_continue);
-  if (cont == Qfalse)
-    rb_raise(eDNSSDError, "service is already stopped");
-
-  rb_ivar_set(self, dnssd_iv_continue, Qfalse);
-
   dnssd_service_free_client(client);
 
   return self;
@@ -710,7 +704,7 @@ Init_DNSSD_Service(void) {
   rb_define_singleton_method(cDNSSDService, "get_property", dnssd_service_s_get_property, 1);
 #endif
 
-  rb_define_method(cDNSSDService, "stop", dnssd_service_stop, 0);
+  rb_define_private_method(cDNSSDService, "_stop", dnssd_service_stop, 0);
 
   rb_define_private_method(cDNSSDServiceRegister, "_add_record", dnssd_service_add_record, 4);
   rb_define_private_method(cDNSSDService, "ref_sock_fd", dnssd_ref_sock_fd, 0);
