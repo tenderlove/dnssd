@@ -16,7 +16,7 @@ class TestDNSSD < DNSSD::Test
     t = nil
     latch = Latch.new
 
-    DNSSD.browse '_blackjack._tcp' do |reply|
+    browse = DNSSD.browse '_blackjack._tcp' do |reply|
       next unless 'blackjack tcp server' == reply.name
       t = reply
       latch.release
@@ -30,6 +30,7 @@ class TestDNSSD < DNSSD::Test
 
     assert_equal 'blackjack tcp server', t.name
   ensure
+    browse.stop
     s.close
   end
 
@@ -37,7 +38,7 @@ class TestDNSSD < DNSSD::Test
     t = nil
     latch = Latch.new
 
-    DNSSD.resolve 'blackjack resolve', '_blackjack._tcp', 'local.' do |reply|
+    rs = DNSSD.resolve 'blackjack resolve', '_blackjack._tcp', 'local.' do |reply|
       t = reply
       latch.release
     end
@@ -51,7 +52,8 @@ class TestDNSSD < DNSSD::Test
     assert_equal 'blackjack resolve', t.name
     assert_equal @port + 1, t.port
   ensure
-    s.close
+    rs.stop
+    s.close if s
   end
 
   def test_class_getservbyport

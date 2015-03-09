@@ -65,14 +65,9 @@ module DNSSD
   ##
   # Asynchronous version of DNSSD::Service#browse
 
-  def self.browse(type, domain = nil, flags = 0,
-                  interface = DNSSD::InterfaceAny, &block)
-    service = DNSSD::Service.new
-
-    Thread.start do
-      run(service, :browse, type, domain, flags, interface, &block)
-    end
-
+  def self.browse type, domain = nil, flags = 0, interface = DNSSD::InterfaceAny
+    service = DNSSD::Service.browse type, domain, flags, interface
+    service.async_each { |r| yield r }
     service
   end
 
@@ -114,18 +109,11 @@ module DNSSD
   # Asynchronous version of DNSSD::Service#register
 
   def self.register(name, type, domain, port, text_record = nil, flags = 0,
-                    interface = DNSSD::InterfaceAny, &block)
-    service = DNSSD::Service.new
+                    interface = DNSSD::InterfaceAny)
+    service = DNSSD::Service.register name, type, domain, port, nil,
+      text_record, flags, interface
 
-    if block_given? then
-      Thread.start do
-        run(service, :register, name, type, domain, port, nil, text_record,
-            flags, interface, &block)
-      end
-    else
-      service.register name, type, domain, port, nil, text_record, flags,
-                       interface
-    end
+    service.async_each { |r| yield r } if block_given?
 
     service
   end
@@ -152,12 +140,8 @@ module DNSSD
   # Asynchronous version of DNSSD::Service#resolve
 
   def self.resolve(*args, &block)
-    service = DNSSD::Service.new
-
-    Thread.start do
-      run(service, :resolve, *args, &block)
-    end
-
+    service = DNSSD::Service.resolve(*args)
+    service.async_each { |r| yield r }
     service
   end
 
