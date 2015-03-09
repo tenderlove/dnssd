@@ -22,18 +22,23 @@ class DNSSD::Service
     @continue = true
   end
 
-  ##
-  # Adds an extra DNS record of +type+ containing +data+.  +ttl+ is in
-  # seconds, use 0 for the default value.  +flags+ are currently ignored.
-  #
-  # Must be called on a service only after #register.
-  #
-  # Returns the added DNSSD::Record
+  class Register < ::DNSSD::Service
+    def initialize
+      super
+      @records = []
+    end
 
-  def add_record(type, data, ttl = 0, flags = 0)
-    @records ||= []
+    ##
+    # Adds an extra DNS record of +type+ containing +data+.  +ttl+ is in
+    # seconds, use 0 for the default value.  +flags+ are currently ignored.
+    #
+    # Must be called on a service only after #register.
+    #
+    # Returns the added DNSSD::Record
 
-    _add_record flags.to_i, type, data, ttl
+    def add_record(type, data, ttl = 0, flags = 0)
+      _add_record flags.to_i, type, data, ttl
+    end
   end
 
   ##

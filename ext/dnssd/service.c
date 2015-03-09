@@ -10,6 +10,7 @@ static VALUE cDNSSDReplyQueryRecord;
 static VALUE cDNSSDReplyRegister;
 static VALUE cDNSSDReplyResolve;
 static VALUE cDNSSDService;
+static VALUE cDNSSDServiceRegister;
 static VALUE cDNSSDTextRecord;
 static VALUE rb_cSocket;
 
@@ -580,7 +581,7 @@ dnssd_service_register(VALUE klass, VALUE _flags, VALUE _interface, VALUE _name,
   callback = dnssd_service_register_reply;
 
   client = xcalloc(1, sizeof(DNSServiceRef));
-  self = TypedData_Wrap_Struct(klass, &dnssd_service_type, client);
+  self = TypedData_Wrap_Struct(cDNSSDServiceRegister, &dnssd_service_type, client);
   rb_obj_call_init(self, 0, 0);
 
   e = DNSServiceRegister(client, flags, interface, name, type,
@@ -671,9 +672,10 @@ Init_DNSSD_Service(void) {
   dnssd_iv_thread      = rb_intern("@thread");
   dnssd_iv_type        = rb_intern("@type");
 
-  cDNSSDFlags      = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
-  cDNSSDRecord     = rb_define_class_under(mDNSSD, "Record", rb_cObject);
-  cDNSSDService    = rb_define_class_under(mDNSSD, "Service", rb_cObject);
+  cDNSSDFlags           = rb_define_class_under(mDNSSD, "Flags", rb_cObject);
+  cDNSSDRecord          = rb_define_class_under(mDNSSD, "Record", rb_cObject);
+  cDNSSDService         = rb_define_class_under(mDNSSD, "Service", rb_cObject);
+  cDNSSDServiceRegister = rb_define_class_under(cDNSSDService, "Register", cDNSSDService);
   cDNSSDTextRecord = rb_path2class("DNSSD::TextRecord");
 
   cDNSSDReplyAddrInfo    = rb_path2class("DNSSD::Reply::AddrInfo");
@@ -726,7 +728,7 @@ Init_DNSSD_Service(void) {
   rb_define_method(cDNSSDService, "stop", dnssd_service_stop, 0);
   rb_define_method(cDNSSDService, "stopped?", dnssd_service_stopped_p, 0);
 
-  rb_define_method(cDNSSDService, "_add_record", dnssd_service_add_record, 4);
+  rb_define_private_method(cDNSSDServiceRegister, "_add_record", dnssd_service_add_record, 4);
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_browse", dnssd_service_browse, 4);
   rb_define_private_method(rb_singleton_class(cDNSSDService), "_enumerate_domains", dnssd_service_enumerate_domains, 2);
 #ifdef HAVE_DNSSERVICEGETADDRINFO
