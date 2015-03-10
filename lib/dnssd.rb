@@ -74,24 +74,20 @@ module DNSSD
   ##
   # Synchronous version of DNSSD::Service#browse
 
-  def self.browse!(type, domain = nil, flags = 0,
-                  interface = DNSSD::InterfaceAny, &block)
-    service = DNSSD::Service.new
-
-    run(service, :browse, type, domain, flags, interface, &block)
+  def self.browse! type, domain = nil, flags = 0, interface = DNSSD::InterfaceAny
+    service = DNSSD::Service.browse type, domain, flags, interface
+    service.each { |r| yield r }
+  ensure
+    service.stop
   end
 
   ##
   # Asynchronous version of DNSSD::Service#enumerate_domains
 
-  def self.enumerate_domains(flags = DNSSD::Flags::BrowseDomains,
-                             interface = DNSSD::InterfaceAny, &block)
-    service = DNSSD::Service.new
-
-    Thread.start do
-      run(service, :enumerate_domains, flags, interface, &block)
-    end
-
+  def self.enumerate_domains flags = DNSSD::Flags::BrowseDomains,
+                             interface = DNSSD::InterfaceAny
+    service = DNSSD::Service.enumerate_domains flags, interface
+    service.async_each { |r| yield r }
     service
   end
 
@@ -100,9 +96,10 @@ module DNSSD
 
   def self.enumerate_domains!(flags = DNSSD::Flags::BrowseDomains,
                               interface = DNSSD::InterfaceAny, &block)
-    service = DNSSD::Service.new
-
-    run(service, :enumerate_domains, flags, interface, &block)
+    service = DNSSD::Service.enumerate_domains flags, interface
+    service.each { |r| yield r }
+  ensure
+    service.stop
   end
 
   ##
@@ -123,23 +120,18 @@ module DNSSD
 
   def self.register!(name, type, domain, port, text_record = nil, flags = 0,
                      interface = DNSSD::InterfaceAny, &block)
-    service = DNSSD::Service.new
+    service = DNSSD::Service.register name, type, domain, port, nil,
+      text_record, flags, interface
 
-    if block_given? then
-      run(service, :register, name, type, domain, port, nil, text_record, flags,
-          interface, &block)
-    else
-      service.register name, type, domain, port, nil, text_record, flags,
-                       interface
-    end
-
-    service
+    service.each { |r| yield r } if block_given?
+  ensure
+    service.stop
   end
 
   ##
   # Asynchronous version of DNSSD::Service#resolve
 
-  def self.resolve(*args, &block)
+  def self.resolve(*args)
     service = DNSSD::Service.resolve(*args)
     service.async_each { |r| yield r }
     service
@@ -148,7 +140,7 @@ module DNSSD
   ##
   # Synchronous version of DNSSD::Service#resolve
 
-  def self.resolve!(*args, &block)
+  def self.resolve!(*args)
     service = DNSSD::Service.resolve(*args)
     service.each { |r| yield r }
   ensure

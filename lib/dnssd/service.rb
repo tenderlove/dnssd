@@ -237,5 +237,6 @@ class DNSSD::Service
     @continue = false
     @thread.join if @thread
     _stop
+    self
   end
 end

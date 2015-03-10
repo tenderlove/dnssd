@@ -12,6 +12,39 @@ class TestDNSSD < DNSSD::Test
     Thread.abort_on_exception = @abort
   end
 
+  def test_synchronous_register
+    reply = DNSSD.register! name, "_http._tcp", nil, 8080 do |r|
+      break r
+    end
+    assert reply
+  end
+
+  def test_synchronous_enumerate
+    reply = DNSSD.enumerate_domains! do |r|
+      break r
+    end
+    assert reply
+  end
+
+  def test_asynchronous_enumerate
+    latch = Latch.new
+    reply = DNSSD.enumerate_domains do |r|
+      latch.await
+    end
+    latch.release
+    assert reply
+  end
+
+  def test_synchronous_browse
+    register = DNSSD::Service.register name, "_http._tcp", nil, 8080
+    thing = nil
+    DNSSD.browse!('_http._tcp') do |r|
+      thing = true
+      break
+    end
+    assert thing
+  end
+
   def test_class_announce_tcp_server
     t = nil
     latch = Latch.new
