@@ -146,18 +146,6 @@ module DNSSD
   ensure
     service.stop
   end
-
-  ##
-  # Dispatches +args+ and +block+ to +method+ on +service+ and ensures
-  # +service+ is shut down after use.
-
-  def self.run(service, method, *args, &block)
-    service.send(method, *args, &block)
-
-    service
-  ensure
-    service.stop unless service.stopped?
-  end
 end
 
 require 'socket'
