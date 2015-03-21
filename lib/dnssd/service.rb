@@ -76,7 +76,10 @@ class DNSSD::Service
 
     while @continue
       if IO.select rd, nil, nil, 1
-        process_result
+        begin
+          process_result
+        rescue DNSSD::UnknownError
+        end
         @replies.each { |r| yield r }
         @replies.clear
       end

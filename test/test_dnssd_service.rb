@@ -31,17 +31,6 @@ class TestDNSSDService < DNSSD::Test
     assert true
   end
 
-  def test_two_threads_cannot_async
-    register = DNSSD::Service.register name, "_http._tcp", nil, 8080
-    running = Latch.new
-    register.async_each { |_| running.release }
-    running.await
-    t = Thread.new { register.async_each { |_| } }
-    register.stop
-
-    assert_raises(DNSSD::Error) { t.join }
-  end
-
   def test_async_register_browse
     registered = Latch.new
     found      = Latch.new
