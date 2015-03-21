@@ -43,6 +43,7 @@ class TestDNSSD < DNSSD::Test
       break
     end
     assert thing
+    register.stop
   end
 
   def test_class_announce_tcp_server

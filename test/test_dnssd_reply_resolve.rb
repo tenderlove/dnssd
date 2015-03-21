@@ -1,7 +1,6 @@
-require 'minitest/autorun'
-require 'dnssd'
+require 'helper'
 
-class TestDNSSDReplyResolve < MiniTest::Unit::TestCase
+class TestDNSSDReplyResolve < DNSSD::Test
 
   def setup
     @port = Socket.getservbyname 'blackjack'

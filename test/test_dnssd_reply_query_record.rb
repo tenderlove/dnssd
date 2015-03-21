@@ -1,7 +1,6 @@
-require 'minitest/autorun'
-require 'dnssd'
+require 'helper'
 
-class TestDNSSDReplyQueryRecord < MiniTest::Unit::TestCase
+class TestDNSSDReplyQueryRecord < DNSSD::Test
 
   def setup
     @fullname = 'blackjack._blackjack._tcp.test.'

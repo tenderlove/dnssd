@@ -1,7 +1,6 @@
-require 'minitest/autorun'
-require 'dnssd'
+require 'helper'
 
-class TestDNSSDReply < MiniTest::Unit::TestCase
+class TestDNSSDReply < DNSSD::Test
 
   def setup
     @reply = DNSSD::Reply.new nil, 0, 0

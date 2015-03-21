@@ -1,7 +1,6 @@
-require 'minitest/autorun'
-require 'dnssd'
+require 'helper'
 
-class TestDNSSDReplyBrowse < MiniTest::Unit::TestCase
+class TestDNSSDReplyBrowse < DNSSD::Test
 
   def test_connect
     reply = DNSSD::Reply::Browse.new nil, 0, 0, 'blackjack no port',

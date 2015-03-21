@@ -1,7 +1,6 @@
-require 'minitest/autorun'
-require 'dnssd'
+require 'helper'
 
-class TestDNSSDFlags < MiniTest::Unit::TestCase
+class TestDNSSDFlags < DNSSD::Test
 
   def setup
     @flags = DNSSD::Flags.new

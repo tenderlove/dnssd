@@ -160,8 +160,8 @@ class TestDNSSDService < DNSSD::Test
     }
 
     query = DNSSD::Service.query_record reply.fullname, DNSSD::Record::TXT
-    r = query.each.find do |r|
-      !r.flags.more_coming?
+    r = query.each.find do |response|
+      !response.flags.more_coming?
     end
     record = DNSSD::TextRecord.decode r.record
     done.release

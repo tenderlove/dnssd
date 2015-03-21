@@ -1,7 +1,6 @@
-require 'minitest/autorun'
-require 'dnssd'
+require 'helper'
 
-class TestDNSSDTextRecord < MiniTest::Unit::TestCase
+class TestDNSSDTextRecord < DNSSD::Test
   TR = DNSSD::TextRecord
 
   def test_encode
