@@ -89,11 +89,6 @@ class TestDNSSD < DNSSD::Test
     s.close if s
   end
 
-  def test_class_getservbyport
-    assert_equal 'blackjack', DNSSD.getservbyport(1025),
-                 "Your /etc/services is out of date, sorry!"
-  end
-
   def test_class_interface_index
     index = DNSSD.interface_index 'lo0'
     index = DNSSD.interface_index 'lo' if index.zero?

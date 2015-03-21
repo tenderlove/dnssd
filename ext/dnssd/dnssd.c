@@ -7,37 +7,6 @@ void Init_DNSSD_Service(void);
 
 /*
  * call-seq:
- *   DNSSD.getservbyport(port, proto = nil) => service_name
- * 
- * Wrapper for getservbyport(3) - returns the service name for +port+.
- *
- *   DNSSD.getservbyport 1025 # => 'blackjack'
- */
-
-static VALUE
-dnssd_getservbyport(int argc, VALUE * argv, VALUE self) {
-  VALUE _port, _proto;
-  struct servent * result;
-  int port;
-  char * proto = NULL;
-
-  rb_scan_args(argc, argv, "11", &_port, &_proto);
-
-  port = htons(FIX2INT(_port));
-
-  if (RTEST(_proto))
-    proto = StringValueCStr(_proto);
-
-  result = getservbyport(port, proto);
-
-  if (result == NULL)
-    return Qnil;
-
-  return rb_str_new2(result->s_name);
-}
-
-/*
- * call-seq:
  *   DNSSD.interface_name(interface_index) # => interface_name
  *
  * Returns the interface name for interface +interface_index+.
@@ -88,8 +57,6 @@ Init_dnssd(void) {
   rb_define_const(mDNSSD, "InterfaceUnicast",
       ULONG2NUM(kDNSServiceInterfaceIndexUnicast));
 #endif
-
-  rb_define_singleton_method(mDNSSD, "getservbyport", dnssd_getservbyport, -1);
 
   rb_define_singleton_method(mDNSSD, "interface_index", dnssd_if_nametoindex, 1);
   rb_define_singleton_method(mDNSSD, "interface_name", dnssd_if_indextoname, 1);

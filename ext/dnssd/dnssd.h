@@ -23,7 +23,6 @@
 #define SIN_LEN(si) sizeof(struct sockaddr_in)
 #endif
 
-#ifdef HAVE_RUBY_ENCODING_H
 #include <ruby/encoding.h>
 #define dnssd_utf8_cstr(str, to) \
   do {\
@@ -32,11 +31,6 @@
         0, Qnil);\
     to = StringValueCStr(utf8);\
   } while (0)
-#else
-#define dnssd_utf8_cstr(str, to) \
-  do { to = StringValueCStr(str); } while (0)
-#define rb_enc_associate(a, b) do {} while (0)
-#endif
 
 extern VALUE eDNSSDError;
 

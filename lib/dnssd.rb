@@ -32,7 +32,7 @@ module DNSSD
 
     raise ArgumentError, 'socket not bound' if port == 0
 
-    service ||= DNSSD.getservbyport port
+    service ||= Socket.getservbyport port
 
     proto = case socket
             when TCPSocket then 'tcp'
