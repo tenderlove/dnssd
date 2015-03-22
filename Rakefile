@@ -10,7 +10,7 @@ Hoe.plugin :compiler
 
 HOE = Hoe.spec 'dnssd' do
   developer 'Eric Hodel',      'drbrain@segment.net'
-  developer 'Aaron Patterson', 'aaronp@rubyforge.org'
+  developer 'Aaron Patterson', 'aaron.patterson@gmail.com'
   developer 'Phil Hagelberg',  'phil@hagelb.org'
   developer 'Chad Fowler',     'chad@chadfowler.com'
   developer 'Charles Mills',   ''
