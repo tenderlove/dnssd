@@ -6,11 +6,16 @@ class TestDNSSDReplyBrowse < DNSSD::Test
     reply = DNSSD::Reply::Browse.new nil, 0, 0, 'blackjack no port',
                                      '_blackjack._tcp', 'local'
 
-    port = Socket.getservbyname 'blackjack'
+    port = stub Socket, :getservbyname, 1025 do
+      Socket.getservbyname('blackjack')
+    end
+
     server = TCPServer.new nil, port
     Thread.start do server.accept end
 
-    DNSSD.announce server, 'blackjack no port'
+    stub Socket, :getservbyport, "blackjack" do
+      DNSSD.announce server, 'blackjack no port'
+    end
 
     socket = reply.connect
 
@@ -28,14 +33,18 @@ class TestDNSSDReplyBrowse < DNSSD::Test
                                      '_blackjack._tcp', 'local'
 
 
-    port = Socket.getservbyname 'blackjack'
+    port = stub Socket, :getservbyname, 1025 do
+      Socket.getservbyname 'blackjack'
+    end
     server = TCPServer.new nil, port
     Thread.start do server.accept end
 
     name = "\u00E9"
     name.encode! Encoding::ISO_8859_1
 
-    DNSSD.announce server, name
+    stub Socket, :getservbyport, 'blackjack' do
+      DNSSD.announce server, name
+    end
 
     socket = reply.connect
 

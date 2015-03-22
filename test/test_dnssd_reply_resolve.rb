@@ -3,8 +3,11 @@ require 'helper'
 class TestDNSSDReplyResolve < DNSSD::Test
 
   def setup
-    @port = Socket.getservbyname 'blackjack'
+    @port = stub Socket, :getservbyname, 1025 do
+      Socket.getservbyname 'blackjack'
+    end
     @interface = DNSSD::InterfaceAny
+    super
   end
 
   def test_connect_tcp

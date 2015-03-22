@@ -61,13 +61,6 @@ static const rb_data_type_t dnssd_service_type = {
     Data_Get_Struct(obj, type, var);\
   } while (0)
 
-static void
-dnssd_service_callback(VALUE self, VALUE reply) {
-  VALUE replies = rb_ivar_get(self, dnssd_iv_replies);
-
-  rb_funcall(replies, dnssd_id_push, 1, reply);
-}
-
 static VALUE
 create_fullname(const char *name, const char *regtype,
     const char *domain) {
@@ -169,7 +162,6 @@ dnssd_service_s_allocate(VALUE klass) {
 
 static VALUE
 dnssd_service_stop(VALUE self) {
-  VALUE thread;
   DNSServiceRef *client;
 
   TypedData_Get_Struct(self, DNSServiceRef, &dnssd_service_type, client);
@@ -190,9 +182,10 @@ dnssd_ref_sock_fd(VALUE self) {
 static VALUE
 dnssd_process_result(VALUE self) {
   DNSServiceRef *client;
+  DNSServiceErrorType e;
   TypedData_Get_Struct(self, DNSServiceRef, &dnssd_service_type, client);
 
-  DNSServiceErrorType e = DNSServiceProcessResult(*client);
+  e = DNSServiceProcessResult(*client);
   dnssd_check_error_code(e);
 
   return Qtrue;
@@ -638,6 +631,8 @@ dnssd_service_resolve(VALUE klass, VALUE _flags, VALUE _interface, VALUE _name,
 
 void
 Init_DNSSD_Service(void) {
+  VALUE sDNSSDService;
+
   mDNSSD = rb_define_module("DNSSD");
 
   dnssd_id_join = rb_intern("join");
@@ -662,7 +657,7 @@ Init_DNSSD_Service(void) {
   cDNSSDReplyQueryRecord = rb_path2class("DNSSD::Reply::QueryRecord");
   cDNSSDReplyRegister    = rb_path2class("DNSSD::Reply::Register");
   cDNSSDReplyResolve     = rb_path2class("DNSSD::Reply::Resolve");
-  VALUE sDNSSDService = rb_singleton_class(cDNSSDService);
+  sDNSSDService = rb_singleton_class(cDNSSDService);
 
   rb_cSocket = rb_path2class("Socket");
 

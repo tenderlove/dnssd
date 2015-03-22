@@ -34,7 +34,7 @@ class DNSSD::Reply::Browse < DNSSD::Reply
   def connect(family = Socket::AF_UNSPEC, addrinfo_flags = 0)
     value = nil
 
-    DNSSD.resolve! self do |reply|
+    DNSSD.resolve! name, type, domain do |reply|
       value = reply
       break
     end
@@ -47,6 +47,4 @@ class DNSSD::Reply::Browse < DNSSD::Reply
       self.class, object_id, fullname, interface_name, @flags
     ]
   end
-
 end
-

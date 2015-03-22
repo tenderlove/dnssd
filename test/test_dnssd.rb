@@ -5,7 +5,11 @@ class TestDNSSD < DNSSD::Test
     @abort = Thread.abort_on_exception
     Thread.abort_on_exception = true
 
-    @port = Socket.getservbyname 'blackjack'
+    begin
+      @port = Socket.getservbyname 'blackjack'
+    rescue
+      @port = 1025
+    end
   end
 
   def teardown
@@ -20,10 +24,12 @@ class TestDNSSD < DNSSD::Test
   end
 
   def test_synchronous_enumerate
-    reply = DNSSD.enumerate_domains! do |r|
-      break r
+    Timeout.timeout(2, Minitest::Skip) do
+      reply = DNSSD.enumerate_domains! do |r|
+        break r
+      end
+      assert reply
     end
-    assert reply
   end
 
   def test_asynchronous_enumerate
@@ -58,7 +64,9 @@ class TestDNSSD < DNSSD::Test
 
     s = TCPServer.new 'localhost', @port
 
-    DNSSD.announce s, 'blackjack tcp server'
+    stub Socket, :getservbyport, 'blackjack' do
+      DNSSD.announce s, 'blackjack tcp server'
+    end
 
     latch.await
 

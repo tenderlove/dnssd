@@ -144,7 +144,7 @@ module DNSSD
     service = DNSSD::Service.resolve(*args)
     service.each { |r| yield r }
   ensure
-    service.stop
+    service.stop if service
   end
 end
 

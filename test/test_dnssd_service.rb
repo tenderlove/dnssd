@@ -24,11 +24,20 @@ class TestDNSSDService < DNSSD::Test
 
   def test_enumerate
     service = DNSSD::Service.enumerate_domains
-    service.each do |reply|
-      # I *think* there will be a local. on every machine??
-      break if reply.domain == 'local.'
+
+    begin
+      Timeout.timeout(2) do
+        service.each do |reply|
+          # I *think* there will be a local. on every machine??
+          break if reply.domain == 'local.'
+        end
+        assert true
+      end
+    rescue Timeout::Error
+      skip "couldn't find any domains to enumerate"
     end
-    assert true
+  ensure
+    service.stop
   end
 
   def test_async_register_browse
@@ -143,6 +152,7 @@ class TestDNSSDService < DNSSD::Test
   end
 
   def test_add_record
+    skip "not supported" if RbConfig::CONFIG['target_os'] =~ /linux/
     done = Latch.new
     registered = Latch.new
     broadcast = Thread.new do

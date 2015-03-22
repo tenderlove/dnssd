@@ -158,10 +158,12 @@ class DNSSD::Service
 
       addrinfo = Socket.getaddrinfo host, nil, family
 
-      addrinfo.each do |_, _, a_host, ip, _|
+      list = addrinfo.map do |_, _, a_host, ip, _|
         sockaddr = Socket.pack_sockaddr_in 0, ip
-        @replies << DNSSD::Reply::AddrInfo.new(self, 0, 0, a_host, sockaddr, 0)
+        DNSSD::Reply::AddrInfo.new(self, 0, 0, a_host, sockaddr, 0)
       end
+      def list.stop; end
+      list
     end
   end
 
