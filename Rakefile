@@ -19,6 +19,11 @@ HOE = Hoe.spec 'dnssd' do
   rdoc_locations << 'docs.seattlerb.org:/data/www/docs.seattlerb.org/dnssd/'
 
   clean_globs << 'lib/dnssd/*.{so,bundle,dll}'
+
+  self.spec_extras = {
+    :extensions            => ["ext/dnssd/extconf.rb"],
+    :required_ruby_version => '>= 2.1.0'
+  }
 end
 
 # vim: syntax=Ruby
