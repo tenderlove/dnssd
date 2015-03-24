@@ -66,15 +66,19 @@ class DNSSD::Service
     _browse flags.to_i, interface, type, domain
   end
 
-  def each
+  def each timeout = :never
     raise DNSSD::Error, 'already stopped' unless @continue
 
-    return enum_for __method__ unless block_given?
+    return enum_for __method__, timeout unless block_given?
 
     io = IO.new ref_sock_fd
     rd = [io]
 
+    start_at = clock_time
+
     while @continue
+      break unless timeout == :never || clock_time - start_at < timeout
+
       if IO.select rd, nil, nil, 1
         begin
           process_result
@@ -86,10 +90,10 @@ class DNSSD::Service
     end
   end
 
-  def async_each
+  def async_each timeout = :never
     @lock.synchronize do
       raise DNSSD::Error, 'already stopped' unless @continue
-      @thread = Thread.new { each { |r| yield r } }
+      @thread = Thread.new { each(timeout) { |r| yield r } }
     end
   end
 
@@ -114,14 +118,12 @@ class DNSSD::Service
   # For each domain found a DNSSD::Reply object is passed to block with
   # #domain set to the enumerated domain.
   #
-  #   available_domains = []
+  #   service = DNSSD::Service.enumerate_domains
   #
-  #   service.enumerate_domains! do |r|
-  #     available_domains << r.domain
+  #   service.each do |r|
+  #     p r.domain
   #     break unless r.flags.more_coming?
   #   end
-  #
-  #   p available_domains
 
   def self.enumerate_domains(flags = DNSSD::Flags::BrowseDomains,
                         interface = DNSSD::InterfaceAny, &block)
@@ -243,5 +245,17 @@ class DNSSD::Service
     @thread.join if @thread
     _stop
     self
+  end
+
+  private
+
+  if defined? Process::CLOCK_MONOTONIC
+    def clock_time
+      Process.clock_gettime Process::CLOCK_MONOTONIC
+    end
+  else
+    def clock_time
+      Time.now
+    end
   end
 end
