@@ -527,14 +527,23 @@ dnssd_service_register(VALUE klass, VALUE _flags, VALUE _interface, VALUE _name,
   DNSServiceRef *client;
   VALUE self;
 
-  dnssd_utf8_cstr(_name, name);
+  if (!NIL_P(_name)) {
+    Check_Type(_name, T_STRING);
+    dnssd_utf8_cstr(_name, name);
+  }
+
+  Check_Type(_type, T_STRING);
   dnssd_utf8_cstr(_type, type);
 
-  if (!NIL_P(_host))
+  if (!NIL_P(_host)) {
+    Check_Type(_host, T_STRING);
     dnssd_utf8_cstr(_host, host);
+  }
 
-  if (!NIL_P(_domain))
+  if (!NIL_P(_domain)) {
+    Check_Type(_domain, T_STRING);
     dnssd_utf8_cstr(_domain, domain);
+  }
 
   port = htons((uint16_t)NUM2UINT(_port));
 
