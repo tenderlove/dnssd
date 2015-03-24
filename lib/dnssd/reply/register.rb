@@ -27,6 +27,11 @@ class DNSSD::Reply::Register < DNSSD::Reply
     set_names name, type, domain
   end
 
+  def resolve
+    service = DNSSD::Service.resolve name, type, domain
+    service.first
+  end
+
   def inspect # :nodoc:
     "#<%s:0x%x %p flags: %p>" % [
       self.class, object_id, fullname, @flags

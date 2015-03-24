@@ -42,6 +42,11 @@ class DNSSD::Reply::Browse < DNSSD::Reply
     value.connect family, addrinfo_flags
   end
 
+  def resolve
+    service = DNSSD::Service.resolve name, type, domain
+    service.first
+  end
+
   def inspect # :nodoc:
     "#<%s:0x%x %p interface: %s flags: %p>" % [
       self.class, object_id, fullname, interface_name, @flags
