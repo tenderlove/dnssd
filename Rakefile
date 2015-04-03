@@ -22,7 +22,7 @@ HOE = Hoe.spec 'dnssd' do
 
   self.spec_extras = {
     :extensions            => ["ext/dnssd/extconf.rb"],
-    :required_ruby_version => '>= 2.1.0'
+    :required_ruby_version => '>= 2.0.0'
   }
 end
 
