@@ -515,7 +515,7 @@ dnssd_service_register_reply(DNSServiceRef client, DNSServiceFlags flags,
 static VALUE
 dnssd_service_register(VALUE klass, VALUE _flags, VALUE _interface, VALUE _name,
     VALUE _type, VALUE _domain, VALUE _host, VALUE _port, VALUE _text_record) {
-  const char *name, *type, *host = NULL, *domain = NULL;
+  const char *name = NULL, *type, *host = NULL, *domain = NULL;
   uint16_t port;
   uint16_t txt_len = 0;
   char *txt_rec = NULL;
