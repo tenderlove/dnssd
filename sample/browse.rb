@@ -4,14 +4,13 @@ Thread.abort_on_exception = true
 trap 'INT' do exit end
 trap 'TERM' do exit end
 
-browser = DNSSD::Service.new
 services = {}
 
 puts "Browsing for TCP blackjack service"
 puts "(run sample/register.rb)"
 puts
 
-browser.browse '_blackjack._tcp' do |reply|
+DNSSD.browse! '_blackjack._tcp' do |reply|
   services[reply.fullname] = reply
   next if reply.flags.more_coming?
 
