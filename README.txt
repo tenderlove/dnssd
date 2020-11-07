@@ -2,7 +2,7 @@
 
 * https://github.com/tenderlove/dnssd
 * http://docs.seattlerb.org/dnssd
-* http://developer.apple.com/documentation/Networking/Conceptual/dns_discovery_api/Introduction.html
+* https://developer.apple.com/library/archive/documentation/Networking/Conceptual/dns_discovery_api/Introduction.html
 
 == DESCRIPTION:
 
