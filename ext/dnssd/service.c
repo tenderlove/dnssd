@@ -1,3 +1,4 @@
+#include <netinet/in.h>
 #include "dnssd.h"
 
 static VALUE mDNSSD;
