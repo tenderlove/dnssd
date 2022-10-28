@@ -13,7 +13,7 @@ module DNSSD
   ##
   # The version of DNSSD you're using.
 
-  VERSION = '3.0.1'
+  VERSION = '3.0.2'
 
   ##
   # Registers +socket+ with DNSSD as +name+.  If +service+ is omitted it is
@@ -164,7 +164,7 @@ require 'dnssd/text_record'
 ENV['AVAHI_COMPAT_NOWARN'] = '1'
 
 # The C extension uses above-defined classes
-require 'dnssd/dnssd'
+require 'dnssd.so'
 
 module DNSSD
   # :stopdoc:

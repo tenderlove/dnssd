@@ -1,7 +1,8 @@
 = dnssd
 
-* https://github.com/tenderlove/dnssd
-* http://docs.seattlerb.org/dnssd
+home :: https://github.com/tenderlove/dnssd
+bugs :: https://github.com/tenderlove/dnssd/issues
+
 * https://developer.apple.com/library/archive/documentation/Networking/Conceptual/dns_discovery_api/Introduction.html
 
 == DESCRIPTION:

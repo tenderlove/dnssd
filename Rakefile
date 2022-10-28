@@ -2,11 +2,11 @@
 
 require 'rubygems'
 require 'hoe'
+require 'rake/extensiontask'
 
 Hoe.plugin :minitest
 Hoe.plugin :email
 Hoe.plugin :git
-Hoe.plugin :compiler
 
 HOE = Hoe.spec 'dnssd' do
   developer 'Eric Hodel',      'drbrain@segment.net'
@@ -16,7 +16,7 @@ HOE = Hoe.spec 'dnssd' do
   developer 'Charles Mills',   ''
   developer 'Rich Kilmer',     ''
 
-  rdoc_locations << 'docs.seattlerb.org:/data/www/docs.seattlerb.org/dnssd/'
+  license "MIT"
 
   clean_globs << 'lib/dnssd/*.{so,bundle,dll}'
 
@@ -24,6 +24,9 @@ HOE = Hoe.spec 'dnssd' do
     :extensions            => ["ext/dnssd/extconf.rb"],
     :required_ruby_version => '>= 2.0.0'
   }
+end
+
+Rake::ExtensionTask.new("dnssd", HOE.spec) do |ext|
 end
 
 # vim: syntax=Ruby

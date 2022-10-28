@@ -71,4 +71,4 @@ puts 'checking for ruby features'
 have_header 'ruby/encoding.h'
 
 puts
-create_makefile 'dnssd/dnssd'
+create_makefile 'dnssd'
