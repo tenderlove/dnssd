@@ -1,3 +1,5 @@
+USE THIS INSTEAD: https://github.com/tenderlove/zeroconf
+
 = dnssd
 
 home :: https://github.com/tenderlove/dnssd
